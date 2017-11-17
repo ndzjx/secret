@@ -2,6 +2,7 @@
 #ifndef MOD_STD
 #define MOD_STD
 
+#include <io.h>
 #include <memory>
 #include <string>
 #include <vector>

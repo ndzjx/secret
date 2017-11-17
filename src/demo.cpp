@@ -4,6 +4,6 @@
 int main()
 {
 	using namespace secret ;
-	
+
 	return 0 ;
 }
