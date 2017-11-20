@@ -23,20 +23,35 @@ inline auto email_send(
 	using namespace boost::filesystem ;
 	
 	string raw = R"(python)" ;
-	raw += R"( )" ;
+	
+	raw += R"( ")" ;
 	raw += ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "email_send.py" ) ).generic_string() ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+	
+	raw += R"( ")" ;
 	raw += smtp ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
 	raw += password ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
 	raw += user ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
 	raw += to ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
 	raw += subject ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+	
+	raw += R"( ")" ;
 	raw += file ;
+	raw += R"(")" ;
+	
 	return exec_proxy( raw.c_str() ) ;
 }
 
@@ -48,16 +63,24 @@ inline auto email_stat(
 	using namespace boost::filesystem ;
 
 	pair<int64_t, int64_t> ret ;
-	
+
 	string raw = R"(python)" ;
-	raw += R"( )" ;
+	
+	raw += R"( ")" ;
 	raw += ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "email_stat.py" ) ).generic_string() ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+	
+	raw += R"( ")" ;
 	raw += pop3 ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
 	raw += user ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
 	raw += password ;
+	raw += R"(")" ;
 
 	SECURITY_ATTRIBUTES sa = { 0 } ;
 	sa.nLength = sizeof( sa ) ;
@@ -116,18 +139,28 @@ inline auto email_subject(
 	using namespace boost::filesystem ;
 
 	string ret ;
-	
+
 	string raw = R"(python)" ;
-	raw += R"( )" ;
+	
+	raw += R"( ")" ;
 	raw += ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "email_subject.py" ) ).generic_string() ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+	
+	raw += R"( ")" ;
 	raw += pop3 ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
 	raw += user ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
 	raw += password ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
 	raw += to_string( uidl ) ;
+	raw += R"(")" ;
 	
 	SECURITY_ATTRIBUTES sa = { 0 } ;
 	sa.nLength = sizeof( sa ) ;
