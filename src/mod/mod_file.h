@@ -2,8 +2,6 @@
 #ifndef MOD_FILE
 #define MOD_FILE
 
-#include "mod_encrypt.h"
-
 namespace secret {
 	
 inline auto file_plan_remove( const char* file )
@@ -65,13 +63,14 @@ inline auto file_write_string( const char* file, const char* str )
 	return true ;
 }
 
-inline auto file_transform_base64( const char* file )
+template<class T>
+inline auto file_transform( const char* file, T algo )
 {
 	try
 	{
 		ifstream fs( file, ios_base::in | ios_base::binary ) ;
 		istreambuf_iterator<char> beg( fs ), end ;
-		return base64_encode( vector<char>( beg, end ) ) ;
+		return algo( vector<char>( beg, end ) ) ;
 	}
 
 	catch ( ... )

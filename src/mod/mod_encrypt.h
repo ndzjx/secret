@@ -2,7 +2,64 @@
 #ifndef MOD_ENCRYPT
 #define MOD_ENCRYPT
 
+#include "mod_std.h"
+#include "mod_boost.h"
+#include "mod_pipe.h"
+#include "mod_file.h"
+
 namespace secret {
+
+inline string hash_md5( const char* file )
+{
+	using namespace boost::filesystem ;
+
+	string ret ;
+	
+	string raw = R"(python)" ;
+	raw += R"( )" ;
+	raw += ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "hash_md5.py" ) ).generic_string() ;
+	raw += R"( )" ;
+	raw += file ;
+	
+	SECURITY_ATTRIBUTES sa = { 0 } ;
+	sa.nLength = sizeof( sa ) ;
+	sa.bInheritHandle = TRUE ;
+	sa.lpSecurityDescriptor = NULL ;
+
+	HANDLE hReadPipe = NULL ;
+	HANDLE hWritePipe = NULL ;
+	if ( CreatePipe( &hReadPipe, &hWritePipe, &sa, 0 ) != TRUE )
+	{
+		return ret ;
+	}
+	
+	if ( exec_proxy( raw.c_str(), hWritePipe ) != 200 )
+	{
+		CloseHandle( hReadPipe ) ;
+		CloseHandle( hWritePipe ) ;
+		return ret ;
+	}
+
+	try
+	{
+		CloseHandle( hWritePipe ) ;
+		auto file = file_handle( hReadPipe ) ;
+		if ( file )
+		{
+			const auto len = file_size( file.get() ) ;
+			ret.resize( len + 1 ) ;
+			fread( &ret.at( 0 ), 1, len, file.get() ) ;
+			ret.resize( len ) ;
+		}
+	}
+
+	catch ( ... )
+	{
+
+	}
+
+	return ret ;
+}
 
 template<class T>
 inline auto base64_encode( T&& param )
