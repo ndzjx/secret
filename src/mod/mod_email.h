@@ -22,11 +22,7 @@ inline auto email_send(
 {
 	using namespace boost::filesystem ;
 	
-	string raw = R"(python)" ;
-	
-	raw += R"( ")" ;
-	raw += ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "email_send.py" ) ).generic_string() ;
-	raw += R"(")" ;
+	string raw = ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "email_send.exe" ) ).generic_string() ;
 	
 	raw += R"( ")" ;
 	raw += smtp ;
@@ -64,11 +60,7 @@ inline auto email_stat(
 
 	pair<int64_t, int64_t> ret ;
 
-	string raw = R"(python)" ;
-	
-	raw += R"( ")" ;
-	raw += ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "email_stat.py" ) ).generic_string() ;
-	raw += R"(")" ;
+	string raw = ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "email_stat.exe" ) ).generic_string() ;
 	
 	raw += R"( ")" ;
 	raw += pop3 ;
@@ -140,11 +132,7 @@ inline auto email_subject(
 
 	string ret ;
 
-	string raw = R"(python)" ;
-	
-	raw += R"( ")" ;
-	raw += ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "email_subject.py" ) ).generic_string() ;
-	raw += R"(")" ;
+	string raw = ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "email_subject.exe" ) ).generic_string() ;
 	
 	raw += R"( ")" ;
 	raw += pop3 ;

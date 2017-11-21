@@ -15,12 +15,8 @@ inline string hash_md5( const char* file )
 
 	string ret ;
 	
-	string raw = R"(python)" ;
+	string raw = ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "hash_md5.exe" ) ).generic_string() ;
 	
-	raw += R"( ")" ;
-	raw += ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "hash_md5.py" ) ).generic_string() ;
-	raw += R"(")" ;
-
 	raw += R"( ")" ;
 	raw += file ;
 	raw += R"(")" ;
