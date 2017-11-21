@@ -46,6 +46,19 @@ inline auto file_size( const char* file )
 	return decltype( file_size( (FILE*)nullptr ) )( 0 ) ;
 }
 
+inline auto file_create( const char* file, size_t bytes )
+{
+	auto ptr = file_open( file, "w" ) ;
+	if ( ptr )
+	{
+		_fseeki64( ptr.get(), bytes, SEEK_SET ) ;
+		fputc( 0, ptr.get() ) ;
+		return 0 ;
+	}
+
+	return 1 ;
+}
+
 inline auto file_write_string( const char* file, const char* str )
 {
 	try

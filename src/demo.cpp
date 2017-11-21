@@ -13,7 +13,7 @@ int main()
 	service.user = "testhackpro@126.com" ;
 	service.pawd = "123abc" ;
 
-	auto ss = email_subject( service.pop3, service.user, service.pawd, 1 ) ;
+	file_create( "g:/pp.png", 5022 ) ;
 
 	return 0 ;
 	
