@@ -194,62 +194,49 @@ inline auto email_recv(
 	const char* pop3,
 	const char* user,
 	const char* password,
-	int64_t uidl )
+	int64_t uidl,
+	const char* file,
+	int64_t beg,
+	int64_t end,
+	int64_t seek )
 {
 	using namespace boost::filesystem ;
 
-	string ret ;
+	string raw = ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "email_recv.exe" ) ).generic_string() ;
 	
-	string raw = R"(python)" ;
-	raw += R"( )" ;
-	raw += ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "email_recv.py" ) ).generic_string() ;
-	raw += R"( )" ;
+	raw += R"( ")" ;
 	raw += pop3 ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
 	raw += user ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
 	raw += password ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
 	raw += to_string( uidl ) ;
-	
-	SECURITY_ATTRIBUTES sa = { 0 } ;
-	sa.nLength = sizeof( sa ) ;
-	sa.bInheritHandle = TRUE ;
-	sa.lpSecurityDescriptor = NULL ;
+	raw += R"(")" ;
 
-	HANDLE hReadPipe = NULL ;
-	HANDLE hWritePipe = NULL ;
-	if ( CreatePipe( &hReadPipe, &hWritePipe, &sa, 1024 * 1024 * 10 ) != TRUE )
-	{
-		return ret ;
-	}
-	
-	if ( exec_proxy( raw.c_str(), hWritePipe ) != 200 )
-	{
-		CloseHandle( hReadPipe ) ;
-		CloseHandle( hWritePipe ) ;
-		return ret ;
-	}
+	raw += R"( ")" ;
+	raw += file ;
+	raw += R"(")" ;
 
-	try
-	{
-		CloseHandle( hWritePipe ) ;
-		auto file = file_handle( hReadPipe ) ;
-		if ( file )
-		{
-			const auto len = file_size( file.get() ) ;
-			ret.resize( len + 1 ) ;
-			fread( &ret.at( 0 ), 1, len, file.get() ) ;
-			ret.resize( len ) ;
-		}
-	}
+	raw += R"( ")" ;
+	raw += to_string( beg ) ;
+	raw += R"(")" ;
 
-	catch ( ... )
-	{
+	raw += R"( ")" ;
+	raw += to_string( end ) ;
+	raw += R"(")" ;
 
-	}
+	raw += R"( ")" ;
+	raw += to_string( seek ) ;
+	raw += R"(")" ;
 
-	return ret ;
+	return exec_proxy( raw.c_str() ) ;
 }
 
 #endif

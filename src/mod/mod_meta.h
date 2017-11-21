@@ -86,17 +86,61 @@ inline int meta_from_file( file_meta& obj, const char* file )
 // Service META
 struct service_meta
 {
-	const char*	smtp	= ""	;
-	const char* pop3	= ""	;
-	const char* user	= ""	;
-	const char* pawd	= ""	;
+	string		smtp	= ""	;
+	string		pop3	= ""	;
+	string		user	= ""	;
+	string		pawd	= ""	;
+	size_t		index	= 0		;
 	int64_t		mails	= 0		;
 	int64_t		octets	= 0		;
 };
 
-REFLECTION( service_meta, smtp, pop3, user, pawd, mails, octets ) ;
+REFLECTION( service_meta, smtp, pop3, user, pawd, index, mails, octets ) ;
+
+using service_cloud_t = unordered_map< size_t, service_meta > ;
+using service_index_t = unordered_map< string, vector< pair< pair< size_t, int64_t >, file_meta > > > ;
 
 //////////////////////////////////////////////////////////////////////////
+
+inline auto service_update( service_meta& service )
+{
+	if ( service.index == 0 )
+	{
+		service.index = std::hash<string>()( service.smtp + service.pop3 + service.user ) ;
+	}
+
+	auto stat = email_stat( service.pop3.c_str(), service.user.c_str(), service.pawd.c_str() ) ;
+	if ( stat.first != service.mails || stat.second != service.octets )
+	{
+		service.mails = stat.first ;
+		service.octets = stat.second ;
+		return true ;
+	}
+
+	return false ;
+}
+
+inline void service_makeindex( const service_meta& service, service_index_t& indexs )
+{
+	for ( decltype( service.mails ) i = 1 ; i <= service.mails ; ++i )
+	{
+		auto subject = email_subject( service.pop3.c_str(), service.user.c_str(), service.pawd.c_str(), i ) ;
+
+		file_meta fm ;
+		meta_from_json( fm, subject.c_str() ) ;
+		if ( fm.id.empty() )
+		{
+			continue ;
+		}
+
+		if ( fm.bytes == 0 || fm.end == 0 )
+		{
+			continue ;
+		}
+
+		indexs[ fm.id ].push_back( make_pair( make_pair( service.index, i ), fm ) ) ;
+	}
+}
 
 inline int file_to_service( const service_meta& service, const char* file, const char* to )
 {
@@ -113,7 +157,7 @@ inline int file_to_service( const service_meta& service, const char* file, const
 	}
 
 	boost::algorithm::replace_all( subject, "\"", "\"\"" ) ;
-	return email_send( service.smtp, service.user, service.pawd, to, subject.c_str(), file ) ;
+	return email_send( service.smtp.c_str(), service.user.c_str(), service.pawd.c_str(), to, subject.c_str(), file ) ;
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -36,12 +36,10 @@ try:
 		body += '\n'
 
 	msg = Parser().parsestr( body )
-	ss = base64.b64decode( msg.get_payload() )
-	ss = ss[ var_beg : var_end ]
 
 	f = open( var_file, 'rb+' )
-	f.seek( var_seek )
-	f.write( ss )
+	f.seek( int( var_seek ) )
+	f.write( base64.b64decode( msg.get_payload() )[ int( var_beg ) : int( var_end ) ] )
 	f.close()
 	
 	server.quit()
