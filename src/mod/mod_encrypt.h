@@ -151,10 +151,10 @@ inline auto base64_decode( const char* str )
 	return ret ;
 }
 
-const int c_ReadSize = 120;
-
-bool encrypt(std::istream &source, std::ostream &destination, const string &key)
+inline bool encrypt(std::istream &source, std::ostream &destination, const string &key)
 {
+	const int c_ReadSize = 120;
+
 	// 秘钥
 	DES_key_schedule keySchedule;
 	// 初始化向量
@@ -181,7 +181,7 @@ bool encrypt(std::istream &source, std::ostream &destination, const string &key)
 	{
 		// 设置大小标志
 		memset(szPlainBlock + source.gcount(), 0, c_ReadSize - 1 - source.gcount());
-		szPlainBlock[c_ReadSize - 1] = source.gcount();
+		szPlainBlock[c_ReadSize - 1] = (char)source.gcount();
 
 		memset((char*)&desIv, 0, sizeof(desIv));
 		DES_ncbc_encrypt((const unsigned char*)szPlainBlock, (unsigned char*)szCipherBlock,
@@ -200,10 +200,12 @@ bool encrypt(std::istream &source, std::ostream &destination, const string &key)
 	return true;
 }
 
-bool decrypt(std::istream &source, std::ostream &destination, const string &key)
+inline bool decrypt(std::istream &source, std::ostream &destination, const string &key)
 {
+	const int c_ReadSize = 120;
+
 	source.seekg(0, ios::end);
-	int nLength = source.tellg();
+	auto nLength = source.tellg();
 	source.seekg(0, ios::beg);
 
 	// 秘钥
@@ -246,7 +248,7 @@ bool decrypt(std::istream &source, std::ostream &destination, const string &key)
 	return true;
 }
 
-bool encrypt(const string &source, string &destination, const string &key)
+inline bool encrypt(const string &source, string &destination, const string &key)
 {
 	istringstream oIn(source, ios::binary);
 	ostringstream oOut(ios::binary);
@@ -258,7 +260,7 @@ bool encrypt(const string &source, string &destination, const string &key)
 	return bRet;
 }
 
-bool decrypt(const string &source, string &destination, const string &key)
+inline bool decrypt(const string &source, string &destination, const string &key)
 {
 	istringstream oIn(source, ios::binary);
 	ostringstream oOut(ios::binary);
@@ -269,7 +271,6 @@ bool decrypt(const string &source, string &destination, const string &key)
 	}
 	return bRet;
 }
-
 
 }
 
