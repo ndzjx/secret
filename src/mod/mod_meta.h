@@ -98,6 +98,49 @@ REFLECTION( service_meta, smtp, pop3, user, pawd, mails, octets ) ;
 
 //////////////////////////////////////////////////////////////////////////
 
+<<<<<<< HEAD
+=======
+inline auto service_update( service_meta& service )
+{
+	if ( service.index == 0 )
+	{
+		service.index = std::hash<string>()( service.smtp + service.pop3 + service.user ) ;
+	}
+
+	auto stat = email_stat( service.pop3.c_str(), service.user.c_str(), service.pawd.c_str() ) ;
+	if ( stat.first != service.mails || stat.second != service.octets )
+	{
+		service.mails = stat.first ;
+		service.octets = stat.second ;
+		return true ;
+	}
+
+	return false ;
+}
+
+inline void service_makeindex( const service_meta& service, service_index_t& indexs )
+{
+	for ( decltype( service.mails ) i = 1 ; i <= service.mails ; ++i )
+	{
+		auto subject = email_subject( service.pop3.c_str(), service.user.c_str(), service.pawd.c_str(), i ) ;
+
+		file_meta fm ;
+		meta_from_json( fm, subject.c_str() ) ;
+		if ( fm.id.empty() )
+		{
+			continue ;
+		}
+
+		if ( fm.bytes == 0 || fm.end == 0 )
+		{
+			continue ;
+		}
+
+		indexs[ fm.id ].push_back( make_pair( make_pair( service.index, i ), fm ) ) ;
+	}
+}
+
+>>>>>>> parent of 042d443... finish single file recv
 inline int file_to_service( const service_meta& service, const char* file, const char* to )
 {
 	file_meta fm ;
