@@ -6,6 +6,7 @@
 #include "mod_boost.h"
 #include "mod_pipe.h"
 #include "mod_file.h"
+#include "des.h"
 
 namespace secret {
 
@@ -149,6 +150,126 @@ inline auto base64_decode( const char* str )
 	
 	return ret ;
 }
+
+const int c_ReadSize = 120;
+
+bool encrypt(std::istream &source, std::ostream &destination, const string &key)
+{
+	// 秘钥
+	DES_key_schedule keySchedule;
+	// 初始化向量
+	DES_cblock desIv;
+	const_DES_cblock cDesKey[1];
+	DES_string_to_key(key.c_str(), cDesKey);
+	DES_set_key_checked(cDesKey, &keySchedule);
+
+	char szPlainBlock[c_ReadSize] = { 0 };
+	char szCipherBlock[c_ReadSize] = { 0 };
+
+	while (!source.eof())
+	{
+		source.read(szPlainBlock, c_ReadSize);
+		if (source.gcount() == c_ReadSize)
+		{
+			memset((char*)&desIv, 0, sizeof(desIv));
+			DES_ncbc_encrypt((const unsigned char*)szPlainBlock, (unsigned char*)szCipherBlock,
+				c_ReadSize, &keySchedule, &desIv, DES_ENCRYPT);
+			destination.write(szCipherBlock, c_ReadSize);
+		}
+	}
+	if (source.gcount())
+	{
+		// 设置大小标志
+		memset(szPlainBlock + source.gcount(), 0, c_ReadSize - 1 - source.gcount());
+		szPlainBlock[c_ReadSize - 1] = source.gcount();
+
+		memset((char*)&desIv, 0, sizeof(desIv));
+		DES_ncbc_encrypt((const unsigned char*)szPlainBlock, (unsigned char*)szCipherBlock,
+			c_ReadSize, &keySchedule, &desIv, DES_ENCRYPT);
+		destination.write(szCipherBlock, c_ReadSize);
+	}
+	else
+	{
+		// 写一个空标志
+		memset(szPlainBlock, 0, sizeof(szCipherBlock));
+		memset((char*)&desIv, 0, sizeof(desIv));
+		DES_ncbc_encrypt((const unsigned char*)szPlainBlock, (unsigned char*)szCipherBlock,
+			c_ReadSize, &keySchedule, &desIv, DES_ENCRYPT);
+		destination.write(szCipherBlock, c_ReadSize);
+	}
+	return true;
+}
+
+bool decrypt(std::istream &source, std::ostream &destination, const string &key)
+{
+	source.seekg(0, ios::end);
+	int nLength = source.tellg();
+	source.seekg(0, ios::beg);
+
+	// 秘钥
+	DES_key_schedule keySchedule;
+	// 初始化向量
+	DES_cblock desIv;
+	const_DES_cblock cDesKey[1];
+	DES_string_to_key(key.c_str(), cDesKey);
+	DES_set_key_checked(cDesKey, &keySchedule);
+
+	int nReadLength(0);
+	char szPlainBlock[c_ReadSize] = { 0 };
+	char szCipherBlock[c_ReadSize] = { 0 };
+
+	while (!source.eof())
+	{
+		source.read(szCipherBlock, c_ReadSize);
+
+		memset((char*)&desIv, 0, sizeof(desIv));
+		DES_ncbc_encrypt((const unsigned char*)szCipherBlock, (unsigned char*)szPlainBlock,
+			c_ReadSize, &keySchedule, &desIv, DES_DECRYPT);
+		nReadLength += c_ReadSize;
+
+		// 认为最后一个是数据加标志
+		if (nReadLength < nLength)
+		{
+			destination.write(szPlainBlock, c_ReadSize);
+		}
+		else
+		{
+			// 最后一块的处理要考虑标志位
+			if (0 != szPlainBlock[c_ReadSize - 1])
+			{
+				destination.write(szPlainBlock, szPlainBlock[c_ReadSize - 1]);
+			}
+			break;
+		}
+	}
+
+	return true;
+}
+
+bool encrypt(const string &source, string &destination, const string &key)
+{
+	istringstream oIn(source, ios::binary);
+	ostringstream oOut(ios::binary);
+	bool bRet = encrypt(oIn, oOut, key);
+	if (bRet)
+	{
+		destination = oOut.str();
+	}
+	return bRet;
+}
+
+bool decrypt(const string &source, string &destination, const string &key)
+{
+	istringstream oIn(source, ios::binary);
+	ostringstream oOut(ios::binary);
+	bool bRet = decrypt(oIn, oOut, key);
+	if (bRet)
+	{
+		destination = oOut.str();
+	}
+	return bRet;
+}
+
 
 }
 
