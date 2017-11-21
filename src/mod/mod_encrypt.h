@@ -16,10 +16,14 @@ inline string hash_md5( const char* file )
 	string ret ;
 	
 	string raw = R"(python)" ;
-	raw += R"( )" ;
+	
+	raw += R"( ")" ;
 	raw += ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "hash_md5.py" ) ).generic_string() ;
-	raw += R"( )" ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
 	raw += file ;
+	raw += R"(")" ;
 	
 	SECURITY_ATTRIBUTES sa = { 0 } ;
 	sa.nLength = sizeof( sa ) ;
