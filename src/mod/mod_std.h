@@ -3,6 +3,8 @@
 #define MOD_STD
 
 #include <io.h>
+#include <thread>
+#include <future>
 #include <memory>
 #include <string>
 #include <vector>

@@ -2,8 +2,9 @@
 #ifndef MOD_META
 #define MOD_META
 
-#include <mod_email.h>
-#include <mod_encrypt.h>
+#include "mod_email.h"
+#include "mod_encrypt.h"
+#include "mod_parallel.h"
 #include <iguana/json.hpp>
 
 namespace secret {
@@ -90,25 +91,20 @@ struct service_meta
 	string		pop3	= ""	;
 	string		user	= ""	;
 	string		pawd	= ""	;
-	size_t		index	= 0		;
 	int64_t		mails	= 0		;
 	int64_t		octets	= 0		;
 };
 
-REFLECTION( service_meta, smtp, pop3, user, pawd, index, mails, octets ) ;
+REFLECTION( service_meta, smtp, pop3, user, pawd, mails, octets ) ;
 
-using service_cloud_t = unordered_map< size_t, service_meta > ;
-using service_index_t = unordered_map< string, vector< pair< pair< size_t, int64_t >, file_meta > > > ;
+using service_cloud_t = unordered_map< string, service_meta > ;
+using service_index_meta_t = pair< pair< string, int64_t >, file_meta > ;
+using service_index_t = unordered_map< string, vector< service_index_meta_t > > ;
 
 //////////////////////////////////////////////////////////////////////////
 
 inline auto service_update( service_meta& service )
 {
-	if ( service.index == 0 )
-	{
-		service.index = std::hash<string>()( service.smtp + service.pop3 + service.user ) ;
-	}
-
 	auto stat = email_stat( service.pop3.c_str(), service.user.c_str(), service.pawd.c_str() ) ;
 	if ( stat.first != service.mails || stat.second != service.octets )
 	{
@@ -120,25 +116,29 @@ inline auto service_update( service_meta& service )
 	return false ;
 }
 
-inline void service_makeindex( const service_meta& service, service_index_t& index )
+template<class T_FUNC>
+inline auto service_callback_subject( const service_meta& service, T_FUNC callback,
+	int64_t beg = 1, int64_t end = 0 )
 {
-	for ( decltype( service.mails ) i = 1 ; i <= service.mails ; ++i )
+	if ( end == 0 )
 	{
-		auto subject = email_subject( service.pop3.c_str(), service.user.c_str(), service.pawd.c_str(), i ) ;
+		end = service.mails ;
+	}
 
-		file_meta fm ;
-		meta_from_json( fm, subject.c_str() ) ;
-		if ( fm.id.empty() )
+	for ( int64_t i = beg ; i <= end ; ++i )
+	{
+		callback( [ service, i ]()
 		{
-			continue ;
-		}
-
-		if ( fm.bytes == 0 || fm.end == 0 )
-		{
-			continue ;
-		}
-
-		index[ fm.id ].push_back( make_pair( make_pair( service.index, i ), fm ) ) ;
+			auto subject = email_subject(
+				service.pop3.c_str(),
+				service.user.c_str(),
+				service.pawd.c_str(), i ) ;
+					
+			file_meta fm ;
+			meta_from_json( fm, subject.c_str() ) ;
+					
+			return make_pair( make_pair( service.user, i ), fm ) ;
+		} ) ;
 	}
 }
 

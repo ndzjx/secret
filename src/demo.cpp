@@ -4,21 +4,61 @@ using namespace secret ;
 
 //////////////////////////////////////////////////////////////////////////
 
-service_cloud_t g_cloud ;
-service_index_t g_index ;
-
 int main()
 {
-	service_meta s1{ "smtp.126.com", "pop.126.com", "testhackpro@126.com", "123abc", 0, 0, 0 } ;
-	service_update( s1 ) ;
-	g_cloud.emplace( s1.index, s1 ) ;
+	service_cloud_t			g_cloud		; // 邮箱元信息索引
+	service_index_t			g_index		; // 文件元信息索引
+	ParallelCore			g_pc		; // 并行调度器
 
-	// 根据云中心创建文件索引
-	for ( auto&& node : g_cloud )
+	// 任务 - 生成邮箱元信息索引
 	{
-		service_makeindex( node.second, g_index ) ;
+		ParallelMapReduce<service_meta> pmr ;
+
+		pmr.map( g_pc, []( auto result )
+		{
+			service_meta info{ "smtp.126.com", "pop.126.com", "testhackpro@126.com", "123abc", 0, 0 } ;
+			service_update( info ) ;
+			result->set_value( info ) ;
+		} ) ;
+
+		pmr.reduce( [&g_cloud]( auto&& info )
+		{
+			g_cloud.emplace( info.user, info ) ;
+		} ) ;
 	}
 
+	// 任务 - 生成文件元信息索引
+	{
+		ParallelMapReduce<service_index_meta_t> pmr ;
+
+		for ( auto&& node : g_cloud )
+		{
+			service_callback_subject( node.second, [ &pmr, &g_pc ]( auto user )
+			{
+				pmr.map( g_pc, [ user ]( auto result )
+				{
+					result->set_value( user() ) ;
+				} ) ;
+			} ) ;
+		}
+
+		pmr.reduce( [ &g_index ]( auto&& meta )
+		{
+			auto&& fm = meta.second ;
+			if ( fm.id.empty() )
+			{
+				return ;
+			}
+
+			if ( fm.bytes == 0 || fm.end == 0 )
+			{
+				return ;
+			}
+			
+			g_index[ fm.id ].push_back( meta ) ;
+		} ) ;
+	}
+	
 	if ( true )
 	{
 		// 下载这个文件
