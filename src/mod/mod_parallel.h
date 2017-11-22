@@ -26,6 +26,10 @@ public:
 	void start()
 	{
 		auto hc = boost::thread::hardware_concurrency() ;
+		if (0 == hc)
+		{
+			hc = 1;
+		}
 		while ( hc-- )
 		{
 			m_tg.create_thread( [=]{ m_ios.run() ; } ) ;
