@@ -302,3 +302,6 @@ run/ecloud.exe
 win/build-ecloud-Qt_5_5_1_MSVC2010_64bit-Debug/Makefile
 win/build-ecloud-Qt_5_5_1_MSVC2010_64bit-Debug/Makefile.Debug
 win/build-ecloud-Qt_5_5_1_MSVC2010_64bit-Debug/Makefile.Release
+win/build-ecloud-MSVC2015_64bit-Debug/Makefile
+win/build-ecloud-MSVC2015_64bit-Debug/Makefile.Debug
+win/build-ecloud-MSVC2015_64bit-Debug/Makefile.Release
