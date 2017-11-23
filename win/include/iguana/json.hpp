@@ -459,7 +459,7 @@ namespace iguana { namespace json
 			return c;
 		}
 
-		inline void fill_escape_char(size_t count, char c) {
+		inline void fill_escape_char(size_t , char ) {
 			//            if (count == 0)
 			//                return;
 			//

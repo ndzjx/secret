@@ -25,10 +25,12 @@ inline int exec_proxy( const char* run, HANDLE hWritePipe = NULL, HANDLE hReadPi
 	PROCESS_INFORMATION pi = { 0 } ;
 	STARTUPINFOA si = { 0 } ;
 	si.cb = sizeof( si ) ;
+	si.dwFlags = STARTF_USESHOWWINDOW ;
+	si.wShowWindow = SW_HIDE ;
 
 	if ( hReadPipe || hWritePipe )
 	{
-		si.dwFlags = STARTF_USESTDHANDLES ;
+		si.dwFlags |= STARTF_USESTDHANDLES ;
 		si.hStdOutput = hWritePipe ;
 		si.hStdInput = hReadPipe ;
 	}

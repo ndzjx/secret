@@ -444,7 +444,7 @@ namespace iguana
 	}
 
 	template<size_t I, typename F, typename F1, typename T>
-	std::enable_if_t<!is_reflection<T>::value> apply_value(F&& f, F1&& f1, T&& t)
+	std::enable_if_t<!is_reflection<T>::value> apply_value(F&& f, F1&& , T&& t)
 	{
 		std::forward<F>(f)(std::forward<T>(t), I);
 	}
@@ -455,12 +455,12 @@ namespace iguana
 	}	
 
 	template<typename F, typename T, typename... Rest>
-	constexpr void apply(F&& f, T&& t, std::tuple<Rest...>&&, std::index_sequence<>)
+	constexpr void apply(F&& , T&& , std::tuple<Rest...>&&, std::index_sequence<>)
 	{
 	}
 
 	template<typename F, typename F1, typename T, typename... Rest>
-	constexpr void apply(F&& f, F1&&, T&& t, std::tuple<Rest...>&&, std::index_sequence<>)
+	constexpr void apply(F&& , F1&&, T&& , std::tuple<Rest...>&&, std::index_sequence<>)
 	{
 	}
 
