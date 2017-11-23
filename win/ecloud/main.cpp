@@ -1,8 +1,7 @@
 
 #include <QApplication>
-#include "CUploadWidget.h"
-
 #include <mod_meta.h>
+#include "CUploadWidget.h"
 
 int demo_download()
 {
@@ -82,8 +81,6 @@ int main(int argc, char *argv[])
 
     CUploadWidget w;
     w.show();
-
-	demo_download() ;
 
     return app.exec();
 }
