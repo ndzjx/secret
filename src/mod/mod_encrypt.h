@@ -6,7 +6,7 @@
 #include "mod_boost.h"
 #include "mod_pipe.h"
 #include "mod_file.h"
-#include "des.h"
+#include "openssl/des.h"
 
 namespace secret {
 

@@ -23,7 +23,7 @@ inline int exec_proxy( const char* run, HANDLE hWritePipe = NULL, HANDLE hReadPi
 	}
 	
 	PROCESS_INFORMATION pi = { 0 } ;
-	STARTUPINFO si = { 0 } ;
+	STARTUPINFOA si = { 0 } ;
 	si.cb = sizeof( si ) ;
 
 	if ( hReadPipe || hWritePipe )
