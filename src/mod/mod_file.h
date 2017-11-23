@@ -2,6 +2,8 @@
 #ifndef MOD_FILE
 #define MOD_FILE
 
+#include "mod_std.h"
+
 namespace secret {
 	
 inline auto file_plan_remove( const char* file )

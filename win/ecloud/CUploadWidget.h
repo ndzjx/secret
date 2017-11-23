@@ -2,7 +2,9 @@
 #ifndef CUPLOADWIDGET_H
 #define CUPLOADWIDGET_H
 
+#include <mod_std.h>
 #include <QWidget>
+#include <QTableWidget>
 
 class CUploadWidget : public QWidget
 {
@@ -17,6 +19,13 @@ public slots:
 protected:  
     void dragEnterEvent( QDragEnterEvent* e ) ;
     void dropEvent( QDropEvent* e ) ;
+
+private:
+	void addTableItems( const vector<QString>& items ) ;
+	void setTableItemStatus( int item, int status ) ;
+
+private:
+	QTableWidget* m_pTable ;
 };
 
 #endif // CUPLOADWIDGET_H
