@@ -1,6 +1,5 @@
-
-#ifndef UPLOADWIDGET_H
-#define UPLOADWIDGET_H
+#ifndef CUPLOADWIDGET_H
+#define CUPLOADWIDGET_H
 
 #include <QWidget>
 
@@ -8,8 +7,11 @@ class CUploadWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit CUploadWidget(QWidget *parent = NULL);
-    ~CUploadWidget();
+    explicit CUploadWidget(QWidget *parent = 0);
+
+signals:
+
+public slots:
 };
 
-#endif
+#endif // CUPLOADWIDGET_H
