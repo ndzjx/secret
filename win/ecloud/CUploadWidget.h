@@ -1,3 +1,4 @@
+
 #ifndef CUPLOADWIDGET_H
 #define CUPLOADWIDGET_H
 
@@ -12,6 +13,10 @@ public:
 signals:
 
 public slots:
+
+protected:  
+    void dragEnterEvent( QDragEnterEvent* e ) ;
+    void dropEvent( QDropEvent* e ) ;
 };
 
 #endif // CUPLOADWIDGET_H

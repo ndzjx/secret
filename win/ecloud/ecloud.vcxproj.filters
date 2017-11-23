@@ -41,6 +41,14 @@
     <Filter Include="Python Files">
       <UniqueIdentifier>{f0177231-7b20-44df-8777-2669001c0f4d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="RES Files">
+      <UniqueIdentifier>{94a23fb4-94ad-494a-a930-c87cff182ebb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CUploadWidget.cpp">
@@ -73,6 +81,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_CSettingWidget.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_ecloud.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="CUploadWidget.h">
@@ -84,60 +95,69 @@
     <CustomBuild Include="CSettingWidget.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\src\mod\mod_boost.h">
+      <Filter>MOD Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\mod\mod_email.h">
+      <Filter>MOD Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\mod\mod_encrypt.h">
+      <Filter>MOD Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\mod\mod_file.h">
+      <Filter>MOD Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\mod\mod_image.h">
+      <Filter>MOD Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\mod\mod_media.h">
+      <Filter>MOD Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\mod\mod_meta.h">
+      <Filter>MOD Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\mod\mod_p2p.h">
+      <Filter>MOD Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\mod\mod_parallel.h">
+      <Filter>MOD Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\mod\mod_pipe.h">
+      <Filter>MOD Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\mod\mod_std.h">
+      <Filter>MOD Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\mod\mod_text.h">
+      <Filter>MOD Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\py\email_recv.py">
+      <Filter>Python Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\py\email_send.py">
+      <Filter>Python Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\py\email_stat.py">
+      <Filter>Python Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\py\email_subject.py">
+      <Filter>Python Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\py\hash_md5.py">
+      <Filter>Python Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ecloud.qrc">
+      <Filter>RES Files</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\mod\mod_boost.h">
-      <Filter>MOD Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\mod\mod_email.h">
-      <Filter>MOD Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\mod\mod_encrypt.h">
-      <Filter>MOD Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\mod\mod_file.h">
-      <Filter>MOD Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\mod\mod_image.h">
-      <Filter>MOD Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\mod\mod_media.h">
-      <Filter>MOD Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\mod\mod_meta.h">
-      <Filter>MOD Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\mod\mod_p2p.h">
-      <Filter>MOD Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\mod\mod_parallel.h">
-      <Filter>MOD Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\mod\mod_pipe.h">
-      <Filter>MOD Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\mod\mod_std.h">
-      <Filter>MOD Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\mod\mod_text.h">
-      <Filter>MOD Files</Filter>
+    <ClInclude Include="resource.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\src\py\email_recv.py">
-      <Filter>Python Files</Filter>
-    </None>
-    <None Include="..\..\src\py\email_send.py">
-      <Filter>Python Files</Filter>
-    </None>
-    <None Include="..\..\src\py\email_stat.py">
-      <Filter>Python Files</Filter>
-    </None>
-    <None Include="..\..\src\py\email_subject.py">
-      <Filter>Python Files</Filter>
-    </None>
-    <None Include="..\..\src\py\hash_md5.py">
-      <Filter>Python Files</Filter>
-    </None>
+    <Image Include="res\upbk.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

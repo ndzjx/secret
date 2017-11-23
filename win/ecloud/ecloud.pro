@@ -13,3 +13,6 @@ HEADERS += \
 SOURCES += \
     CUploadWidget.cpp \
     main.cpp
+
+RESOURCES  = \
+    ecloud.qrc
