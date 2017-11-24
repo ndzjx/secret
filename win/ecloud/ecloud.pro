@@ -8,6 +8,10 @@ TEMPLATE = app
 
 DESTDIR = ../../run
 
+INCLUDEPATH += ../include
+INCLUDEPATH += ../../src/mod
+QMAKE_LIBDIR += ../lib
+
 CONFIG(debug, debug|release){
     win32:TARGET=$$join(TARGET,,,d)
     win32:QMAKE_CXXFLAGS_DEBUG += -Fd$$DESTDIR/$$TARGET$$().pdb
