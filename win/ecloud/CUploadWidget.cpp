@@ -74,9 +74,8 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 		{
 			auto item_file_name = new QTableWidgetItem( it ) ;
 			item_file_name->setToolTip( it ) ;
-
-			boost::filesystem::path path( filename ) ;
-			item_file_name->setText( QString().fromLocal8Bit( path.filename().generic_string().c_str() ) ) ;
+			item_file_name->setText( QString().fromLocal8Bit(
+				boost::filesystem::path( filename ).filename().generic_string().c_str() ) ) ;
 			m_pTable->setItem( row, 0, item_file_name ) ;
 		}
 
@@ -108,7 +107,7 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 			// 文件已经在邮箱云中存在
 			if ( global_index().find( fm.id.c_str() ) != global_index().end() )
 			{
-				emit tableItemStatusChanged( row, 0 ) ;
+				emit tableItemStatusChanged( row, 1 ) ;
 				return ;
 			}
 
@@ -116,7 +115,7 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 			for ( auto&& node : global_cloud() )
 			{
 				// 上传中
-				emit tableItemStatusChanged( row, 1 ) ;
+				emit tableItemStatusChanged( row, 2 ) ;
 
 				// 上传成功
 				if ( file_to_service( node.second, fm, filename.c_str(), node.second.user.c_str() ) == 200 )
@@ -127,7 +126,7 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 			}
 
 			// 上传失败
-			emit tableItemStatusChanged( row, 2 ) ;
+			emit tableItemStatusChanged( row, 4 ) ;
 		} ) ;
 	}
 }
@@ -140,20 +139,26 @@ void CUploadWidget::setTableItemStatus( int item, int status )
 		case 0 :
 			m_pTable->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "完成" ) ) ) ;
 			br = QBrush( QColor( 128, 255, 0 ) ) ;
+			global_index_update() ;
 			break ;
 
 		case 1 :
+			m_pTable->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "完成" ) ) ) ;
+			br = QBrush( QColor( 128, 255, 0 ) ) ;
+			break ;
+
+		case 2 :
 			m_pTable->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "发送中..." ) ) ) ;
 			br = QBrush( QColor( 230, 230, 0 ) ) ;
 			break ;
 
-		case 2 :
-			m_pTable->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "失败" ) ) ) ;
+		case 3 :
+			m_pTable->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "非法文件" ) ) ) ;
 			br = QBrush( QColor( 255, 90, 90 ) ) ;
 			break ;
 
-		case 3 :
-			m_pTable->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "非法文件" ) ) ) ;
+		case 4 :
+			m_pTable->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "失败" ) ) ) ;
 			br = QBrush( QColor( 255, 90, 90 ) ) ;
 			break ;
 

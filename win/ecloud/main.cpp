@@ -24,6 +24,44 @@ ParallelCore& global_pc()
 	return *g_pc ;
 }
 
+void global_index_update()
+{
+	ParallelMapReduce<service_index_meta_t> pmr ;
+
+	for ( auto&& node : global_cloud() )
+	{
+		auto news = service_update( node.second ) ;
+		if ( news == 0 )
+		{
+			continue ;
+		}
+
+		service_callback_subject( node.second, [ &pmr ]( auto user )
+		{
+			pmr.map( global_pc(), [ user ]( auto result )
+			{
+				result->set_value( user() ) ;
+			} ) ;
+		}, node.second.mails - news + 1, node.second.mails ) ;
+	}
+
+	pmr.reduce( []( auto&& meta )
+	{
+		auto&& fm = meta.second ;
+		if ( fm.id.empty() )
+		{
+			return ;
+		}
+
+		if ( fm.bytes == 0 || fm.end == 0 )
+		{
+			return ;
+		}
+			
+		global_index()[ fm.id ].push_back( meta ) ;
+	} ) ;
+}
+
 void global_init()
 {
 	// 任务 - 生成邮箱云索引
@@ -37,7 +75,6 @@ void global_init()
 			info.pop3 = "pop.126.com" ;
 			info.user = "testhackpro@126.com" ;
 			info.pawd = "123abc" ;
-			service_update( info ) ;
 			result->set_value( info ) ;
 		} ) ;
 
@@ -48,36 +85,7 @@ void global_init()
 	}
 
 	// 任务 - 生成文件元信息索引
-	{
-		ParallelMapReduce<service_index_meta_t> pmr ;
-
-		for ( auto&& node : global_cloud() )
-		{
-			service_callback_subject( node.second, [ &pmr ]( auto user )
-			{
-				pmr.map( global_pc(), [ user ]( auto result )
-				{
-					result->set_value( user() ) ;
-				} ) ;
-			} ) ;
-		}
-
-		pmr.reduce( []( auto&& meta )
-		{
-			auto&& fm = meta.second ;
-			if ( fm.id.empty() )
-			{
-				return ;
-			}
-
-			if ( fm.bytes == 0 || fm.end == 0 )
-			{
-				return ;
-			}
-			
-			global_index()[ fm.id ].push_back( meta ) ;
-		} ) ;
-	}
+	global_index_update() ;
 }
 
 //////////////////////////////////////////////////////////////////////////

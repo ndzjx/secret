@@ -108,12 +108,13 @@ inline auto service_update( service_meta& service )
 	auto stat = email_stat( service.pop3.c_str(), service.user.c_str(), service.pawd.c_str() ) ;
 	if ( stat.first != service.mails || stat.second != service.octets )
 	{
+		auto old = service.mails ;
 		service.mails = stat.first ;
 		service.octets = stat.second ;
-		return true ;
+		return stat.first - old ;
 	}
 
-	return false ;
+	return decltype( service.mails )( 0 ) ;
 }
 
 template<class T_FUNC>
