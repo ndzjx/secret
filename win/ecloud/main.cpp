@@ -82,7 +82,7 @@ void global_init()
 
 //////////////////////////////////////////////////////////////////////////
 
-int main(int argc, char *argv[])
+int main( int argc, char *argv[] )
 {
 	service_cloud_t cloud ;
 	service_index_t index ;
@@ -91,13 +91,13 @@ int main(int argc, char *argv[])
 	g_index = &index ;
 	g_pc = &pc ;
 	global_init() ;
+	
+	QApplication app( argc, argv ) ;
 
-    QApplication app(argc, argv);
+    CUploadWidget w ;
+    w.show() ;
 
-    CUploadWidget w;
-    w.show();
-
-    return app.exec();
+    return app.exec() ;
 }
 
 //////////////////////////////////////////////////////////////////////////

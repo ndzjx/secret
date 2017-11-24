@@ -73,17 +73,15 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 
 		{
 			auto item_file_name = new QTableWidgetItem( it ) ;
-			item_file_name->setData( Qt::UserRole, it ) ;
 			item_file_name->setToolTip( it ) ;
 
 			boost::filesystem::path path( filename ) ;
-			item_file_name->setText( path.filename().generic_string().c_str() ) ;
+			item_file_name->setText( QString().fromLocal8Bit( path.filename().generic_string().c_str() ) ) ;
 			m_pTable->setItem( row, 0, item_file_name ) ;
 		}
 
 		{
-			boost::filesystem::path path( filename ) ;
-			auto bytes = (double)secret::file_size( path.generic_string().c_str() ) ;
+			auto bytes = (double)secret::file_size( filename.c_str() ) ;
 			bytes /= 1024 * 1024 ;
 
 			char out[ 64 ] = { 0 } ;
