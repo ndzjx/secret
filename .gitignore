@@ -307,3 +307,5 @@ win/build-ecloud-MSVC2015_64bit-Debug/Makefile.Debug
 win/build-ecloud-MSVC2015_64bit-Debug/Makefile.Release
 run/ecloudd.exe
 *.filters
+win/ecloud/ecloud.vcxproj
+win/ecloud/GeneratedFiles/qrc_ecloud.cpp
