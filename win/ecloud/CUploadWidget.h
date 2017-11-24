@@ -2,7 +2,12 @@
 #ifndef CUPLOADWIDGET_H
 #define CUPLOADWIDGET_H
 
-#include <mod_std.h>
+#include <mod_meta.h>
+using namespace secret ;
+service_cloud_t& global_cloud() ;
+service_index_t& global_index() ;
+ParallelCore& global_pc() ;
+
 #include <QWidget>
 #include <QTableWidget>
 

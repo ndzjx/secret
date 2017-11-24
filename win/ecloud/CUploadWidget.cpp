@@ -4,8 +4,6 @@
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QHeaderView>
-#include <mod_boost.h>
-#include <mod_file.h>
 #include "CUploadWidget.h"
 
 CUploadWidget::CUploadWidget(QWidget *parent) :
