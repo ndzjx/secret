@@ -186,20 +186,14 @@ inline auto file_from_single_chunk(
 	return false ;
 }
 
-inline int file_to_service( const service_meta& service, const char* file, const char* to )
+inline int file_to_service( const service_meta& service, file_meta fm, const char* file, const char* to )
 {
-	file_meta fm ;
-	if ( meta_from_file( fm, file ) != 0 )
-	{
-		return 1 ;
-	}
-
 	auto subject = meta_to_json( fm ) ;
 	if ( subject.empty() )
 	{
-		return 2 ;
+		return 1 ;
 	}
-
+	
 	boost::algorithm::replace_all( subject, "\"", "\"\"" ) ;
 	return email_send( service.smtp.c_str(), service.user.c_str(), service.pawd.c_str(), to, subject.c_str(), file ) ;
 }

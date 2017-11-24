@@ -26,23 +26,58 @@ ParallelCore& global_pc()
 
 void global_init()
 {
-	ParallelMapReduce<service_meta> pmr ;
-
-	pmr.map( global_pc(), []( auto result )
+	// 任务 - 生成邮箱云索引
 	{
-		service_meta info ;
-		info.smtp = "smtp.126.com" ;
-		info.pop3 = "pop.126.com" ;
-		info.user = "testhackpro@126.com" ;
-		info.pawd = "123abc" ;
-		service_update( info ) ;
-		result->set_value( info ) ;
-	} ) ;
+		ParallelMapReduce<service_meta> pmr ;
 
-	pmr.reduce( []( auto&& info )
+		pmr.map( global_pc(), []( auto result )
+		{
+			service_meta info ;
+			info.smtp = "smtp.126.com" ;
+			info.pop3 = "pop.126.com" ;
+			info.user = "testhackpro@126.com" ;
+			info.pawd = "123abc" ;
+			service_update( info ) ;
+			result->set_value( info ) ;
+		} ) ;
+
+		pmr.reduce( []( auto&& info )
+		{
+			global_cloud().emplace( info.user, info ) ;
+		} ) ;
+	}
+
+	// 任务 - 生成文件元信息索引
 	{
-		global_cloud().emplace( info.user, info ) ;
-	} ) ;
+		ParallelMapReduce<service_index_meta_t> pmr ;
+
+		for ( auto&& node : global_cloud() )
+		{
+			service_callback_subject( node.second, [ &pmr ]( auto user )
+			{
+				pmr.map( global_pc(), [ user ]( auto result )
+				{
+					result->set_value( user() ) ;
+				} ) ;
+			} ) ;
+		}
+
+		pmr.reduce( []( auto&& meta )
+		{
+			auto&& fm = meta.second ;
+			if ( fm.id.empty() )
+			{
+				return ;
+			}
+
+			if ( fm.bytes == 0 || fm.end == 0 )
+			{
+				return ;
+			}
+			
+			global_index()[ fm.id ].push_back( meta ) ;
+		} ) ;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////

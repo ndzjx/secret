@@ -18,8 +18,10 @@ public:
     explicit CUploadWidget(QWidget *parent = 0);
 
 signals:
+	void tableItemStatusChanged( int item, int status ) ;
 
 public slots:
+	void setTableItemStatus( int item, int status ) ;
 
 protected:  
     void dragEnterEvent( QDragEnterEvent* e ) ;
@@ -27,7 +29,6 @@ protected:
 
 private:
 	void addTableItems( const vector<QString>& items ) ;
-	void setTableItemStatus( int item, int status ) ;
 
 private:
 	QTableWidget* m_pTable ;
