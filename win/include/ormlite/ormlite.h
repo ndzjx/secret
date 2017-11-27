@@ -1263,12 +1263,14 @@ namespace BOT_ORM
                 _GetFromSql () + _GetLimit () + ";",
                 [&] (int argc, char **argv)
             {
-                BOT_ORM_Impl::InjectionHelper::Visit (
-                    copy, [argc] (auto & ... args)
-                {
-                    if (sizeof... (args) != argc)
-                        throw std::runtime_error (BAD_COLUMN_COUNT);
-                });
+				argc ;
+				argv ;
+
+                //BOT_ORM_Impl::InjectionHelper::Visit ( copy, [argc] (auto&& ...)
+                //{
+                    //if (sizeof... (args) != argc)
+                       // throw std::runtime_error (BAD_COLUMN_COUNT);
+                //});
 
                 BOT_ORM_Impl::InjectionHelper::Visit (
                     copy, [argv] (auto & ... args)
@@ -1362,6 +1364,7 @@ namespace BOT_ORM
                 constexpr const char *typeStr = BOT_ORM_Impl::TypeString<
                     std::remove_cv_t<std::remove_reference_t<decltype(arg)>>
                 >::typeStr;
+				arg;
                 fieldFixes.emplace (fieldNames[index], typeStr);
             };
             (void) addTypeStr;

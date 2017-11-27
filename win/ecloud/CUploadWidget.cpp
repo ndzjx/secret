@@ -94,40 +94,40 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 		}
 
 		// 将上传任务提交到并行调度器中
-		global_pc().post( [ = ]
-		{
-			file_meta fm ;
-			if ( meta_from_file( fm, filename.c_str() ) != 0 )
-			{
-				// 非法文件
-				emit tableItemStatusChanged( row, 3 ) ;
-				return ;
-			}
-
-			// 文件已经在邮箱云中存在
-			if ( global_index().find( fm.id.c_str() ) != global_index().end() )
-			{
-				emit tableItemStatusChanged( row, 1 ) ;
-				return ;
-			}
-
-			// 任意一个邮件上传成功即成功
-			for ( auto&& node : global_cloud() )
-			{
-				// 上传中
-				emit tableItemStatusChanged( row, 2 ) ;
-
-				// 上传成功
-				if ( file_to_service( node.second, fm, filename.c_str(), node.second.user.c_str() ) == 200 )
-				{
-					emit tableItemStatusChanged( row, 0 ) ;
-					return ;
-				}
-			}
-
-			// 上传失败
-			emit tableItemStatusChanged( row, 4 ) ;
-		} ) ;
+// 		global_pc().post( [ = ]
+// 		{
+// 			file_meta fm ;
+// 			if ( meta_from_file( fm, filename.c_str() ) != 0 )
+// 			{
+// 				// 非法文件
+// 				emit tableItemStatusChanged( row, 3 ) ;
+// 				return ;
+// 			}
+// 
+// 			// 文件已经在邮箱云中存在
+// 			if ( global_index().find( fm.id.c_str() ) != global_index().end() )
+// 			{
+// 				emit tableItemStatusChanged( row, 1 ) ;
+// 				return ;
+// 			}
+// 
+// 			// 任意一个邮件上传成功即成功
+// 			for ( auto&& node : global_cloud() )
+// 			{
+// 				// 上传中
+// 				emit tableItemStatusChanged( row, 2 ) ;
+// 
+// 				// 上传成功
+// 				if ( file_to_service( node.second, fm, filename.c_str(), node.second.user.c_str() ) == 200 )
+// 				{
+// 					emit tableItemStatusChanged( row, 0 ) ;
+// 					return ;
+// 				}
+// 			}
+// 
+// 			// 上传失败
+// 			emit tableItemStatusChanged( row, 4 ) ;
+// 		} ) ;
 	}
 }
 
@@ -139,7 +139,6 @@ void CUploadWidget::setTableItemStatus( int item, int status )
 		case 0 :
 			m_pTable->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "完成" ) ) ) ;
 			br = QBrush( QColor( 128, 255, 0 ) ) ;
-			global_index_update() ;
 			break ;
 
 		case 1 :

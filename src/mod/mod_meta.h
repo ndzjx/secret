@@ -87,19 +87,15 @@ inline int meta_from_file( file_meta& obj, const char* file )
 // Service META
 struct service_meta
 {
-	string		smtp	= ""	;
-	string		pop3	= ""	;
 	string		user	= ""	;
 	string		pawd	= ""	;
+	string		smtp	= ""	;
+	string		pop3	= ""	;
 	int64_t		mails	= 0		;
 	int64_t		octets	= 0		;
 };
 
-REFLECTION( service_meta, smtp, pop3, user, pawd, mails, octets ) ;
-
-using service_cloud_t = unordered_map< string, service_meta > ;
-using service_index_meta_t = pair< pair< string, int64_t >, file_meta > ;
-using service_index_t = unordered_map< string, vector< service_index_meta_t > > ;
+REFLECTION( service_meta, user, pawd, smtp, pop3, mails, octets ) ;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -117,75 +113,49 @@ inline auto service_update( service_meta& service )
 	return decltype( service.mails )( 0 ) ;
 }
 
-template<class T_FUNC>
-inline auto service_callback_subject( const service_meta& service, T_FUNC callback,
-	int64_t beg = 1, int64_t end = 0 )
-{
-	if ( end == 0 )
-	{
-		end = service.mails ;
-	}
-
-	for ( int64_t i = beg ; i <= end ; ++i )
-	{
-		callback( [ service, i ]()
-		{
-			auto subject = email_subject(
-				service.pop3.c_str(),
-				service.user.c_str(),
-				service.pawd.c_str(), i ) ;
-					
-			file_meta fm ;
-			meta_from_json( fm, subject.c_str() ) ;
-					
-			return make_pair( make_pair( service.user, i ), fm ) ;
-		} ) ;
-	}
-}
-
-inline auto file_from_single_chunk(
-	service_cloud_t& cloud,
-	service_index_t& index,
-	const char* filehash,
-	const char* file )
-{
-	// 索引里有这个文件
-	if ( index.find( filehash ) == index.end() )
-	{
-		return false ;
-	}
-
-	for ( auto&& chunk : index[ filehash ] )
-	{
-		const auto& service = cloud[ chunk.first.first ] ;
-		auto uidl = chunk.first.second ;
-		auto& fm = chunk.second ;
-		if ( fm.bytes != ( fm.end - fm.beg ) )
-		{
-			continue ;
-		}
-		
-		if ( file_create( file, fm.bytes ) != 0 )
-		{
-			break ;
-		}
-
-		if ( email_recv(
-			service.pop3.c_str(),
-			service.user.c_str(),
-			service.pawd.c_str(),
-			uidl,
-			file,
-			0, fm.bytes, 0 ) != 200 )
-		{
-			continue ;
-		}
-
-		return true ;
-	}
-
-	return false ;
-}
+// inline auto file_from_single_chunk(
+// 	service_cloud_t& cloud,
+// 	service_index_t& index,
+// 	const char* filehash,
+// 	const char* file )
+// {
+// 	// 索引里有这个文件
+// 	if ( index.find( filehash ) == index.end() )
+// 	{
+// 		return false ;
+// 	}
+// 
+// 	for ( auto&& chunk : index[ filehash ] )
+// 	{
+// 		const auto& service = cloud[ chunk.first.first ] ;
+// 		auto uidl = chunk.first.second ;
+// 		auto& fm = chunk.second ;
+// 		if ( fm.bytes != ( fm.end - fm.beg ) )
+// 		{
+// 			continue ;
+// 		}
+// 		
+// 		if ( file_create( file, fm.bytes ) != 0 )
+// 		{
+// 			break ;
+// 		}
+// 
+// 		if ( email_recv(
+// 			service.pop3.c_str(),
+// 			service.user.c_str(),
+// 			service.pawd.c_str(),
+// 			uidl,
+// 			file,
+// 			0, fm.bytes, 0 ) != 200 )
+// 		{
+// 			continue ;
+// 		}
+// 
+// 		return true ;
+// 	}
+// 
+// 	return false ;
+// }
 
 inline int file_to_service( const service_meta& service, file_meta fm, const char* file, const char* to )
 {
