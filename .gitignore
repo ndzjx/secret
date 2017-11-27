@@ -309,3 +309,4 @@ run/ecloudd.exe
 *.filters
 win/ecloud/ecloud.vcxproj
 win/ecloud/GeneratedFiles/qrc_ecloud.cpp
+win/ecloud/ecloud.sln

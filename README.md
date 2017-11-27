@@ -7,6 +7,6 @@ secret - Data over E-Mail
 Thank you:
 [Boost](http://www.boost.org/) |
 [iguana](https://github.com/qicosmos/iguana/) |
-[Qt](https://www.qt.io/)
-[ormpp](https://github.com/qicosmos/ormpp/)
+[Qt](https://www.qt.io/) |
+[ormpp](https://github.com/qicosmos/ormpp/) |
 [ORM Lite](https://github.com/BOT-Man-JL/ORM-Lite)
