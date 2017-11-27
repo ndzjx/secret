@@ -81,7 +81,7 @@ inline auto email_stat(
 
 	HANDLE hReadPipe = NULL ;
 	HANDLE hWritePipe = NULL ;
-	if ( CreatePipe( &hReadPipe, &hWritePipe, &sa, 0 ) != TRUE )
+	if ( CreatePipe( &hReadPipe, &hWritePipe, &sa, 1024 * 1024 ) != TRUE )
 	{
 		return ret ;
 	}
@@ -157,7 +157,7 @@ inline auto email_subject(
 
 	HANDLE hReadPipe = NULL ;
 	HANDLE hWritePipe = NULL ;
-	if ( CreatePipe( &hReadPipe, &hWritePipe, &sa, 0 ) != TRUE )
+	if ( CreatePipe( &hReadPipe, &hWritePipe, &sa, 1024 * 1024 ) != TRUE )
 	{
 		return ret ;
 	}

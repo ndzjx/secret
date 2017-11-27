@@ -12,9 +12,9 @@ namespace secret {
 class ParallelCore : public boost::noncopyable
 {
 public:
-	ParallelCore()
+	ParallelCore( unsigned hc = 0 )
 	{
-		start() ;
+		start( hc ) ;
 	}
 
 	~ParallelCore()
@@ -23,9 +23,13 @@ public:
 	}
 
 public:
-	void start()
+	void start( unsigned hc )
 	{
-		auto hc = boost::thread::hardware_concurrency() ;
+		if ( hc == 0 )
+		{
+			hc = boost::thread::hardware_concurrency() ;
+		}
+
 		while ( hc-- )
 		{
 			m_tg.create_thread( [=]{ m_ios.run() ; } ) ;
@@ -42,6 +46,11 @@ public:
 	auto post( T&& task )
 	{
 		return m_ios.post( task ) ;
+	}
+
+	auto& get_ios()
+	{
+		return m_ios ;
 	}
 
 private:

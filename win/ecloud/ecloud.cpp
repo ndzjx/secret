@@ -3,7 +3,7 @@
 
 //////////////////////////////////////////////////////////////////////////
 
-ParallelCore& global_pc( ParallelCore* pc = nullptr )
+ParallelCore& global_pc( ParallelCore* pc )
 {
 	static ParallelCore* g_pc = nullptr ;
 	if ( g_pc == nullptr && pc != nullptr )
@@ -14,7 +14,12 @@ ParallelCore& global_pc( ParallelCore* pc = nullptr )
 	return *g_pc ;
 }
 
-ORMapper& global_db( ORMapper* db = nullptr )
+ParallelCore& global_pc()
+{
+	return global_pc( nullptr ) ;
+}
+
+ORMapper& global_db( ORMapper* db )
 {
 	static ORMapper* g_db = nullptr ;
 	if ( g_db == nullptr && db != nullptr )
@@ -23,6 +28,11 @@ ORMapper& global_db( ORMapper* db = nullptr )
 	}
 
 	return *g_db ;
+}
+
+ORMapper& global_db()
+{
+	return global_db( nullptr ) ;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -60,7 +70,7 @@ void global_update_cloud()
 		{
 			for ( auto&& node : global_db().Query( dbmeta_cloudnode{} ).ToList() )
 			{
-				// 检查节点更新
+				// check node update.
 				auto service = node.to_meta() ;
 				auto news = service_update( service ) ;
 				if ( news == 0 )
@@ -68,11 +78,11 @@ void global_update_cloud()
 					continue ;
 				}
 
-				// 更新数据库中节点数据
+				// update db for node information.
 				node.from_meta( service ) ;
 				global_db().Update( node ) ;
 
-				// 更新节点文件索引
+				// update cloudfile index.
 				for ( int64_t i = service.mails - news + 1 ; i <= service.mails ; ++i )
 				{
 					global_pc().post( std::bind( task_insert_index, service, i ) ) ;
@@ -87,6 +97,52 @@ void global_update_cloud()
 	} ;
 
 	global_pc().post( task_check_update ) ;
+}
+
+bool global_cloudfile_exist( const string& id )
+{
+	try
+	{
+		dbmeta_cloudfile model ;
+		auto field = FieldExtractor{ model } ;
+
+		for ( auto&& cf : global_db().Query( model ).Where( field( model.id ) == id ).ToVector() )
+		{
+			// single chunk file.
+			if ( cf.bytes == ( cf.end - cf.beg ) )
+			{
+				return true ;
+			}
+		}
+	}
+
+	catch ( ... )
+	{
+
+	}
+
+	return false ;
+}
+
+vector<service_meta> global_cloudnodes()
+{
+	vector<service_meta> ret ;
+
+	try
+	{
+		dbmeta_cloudnode model ;
+		for ( auto&& node : global_db().Query( model ).ToVector() )
+		{
+			ret.emplace_back( node.to_meta() ) ;
+		}
+	}
+
+	catch ( ... )
+	{
+
+	}
+
+	return ret ;
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -102,6 +102,11 @@ REFLECTION( service_meta, user, pawd, smtp, pop3, mails, octets ) ;
 inline auto service_update( service_meta& service )
 {
 	auto stat = email_stat( service.pop3.c_str(), service.user.c_str(), service.pawd.c_str() ) ;
+	if ( stat.first == 0 && stat.second == 0 )
+	{
+		return decltype( service.mails )( 0 ) ;
+	}
+
 	if ( stat.first != service.mails || stat.second != service.octets )
 	{
 		auto old = service.mails ;
@@ -112,50 +117,6 @@ inline auto service_update( service_meta& service )
 
 	return decltype( service.mails )( 0 ) ;
 }
-
-// inline auto file_from_single_chunk(
-// 	service_cloud_t& cloud,
-// 	service_index_t& index,
-// 	const char* filehash,
-// 	const char* file )
-// {
-// 	// 索引里有这个文件
-// 	if ( index.find( filehash ) == index.end() )
-// 	{
-// 		return false ;
-// 	}
-// 
-// 	for ( auto&& chunk : index[ filehash ] )
-// 	{
-// 		const auto& service = cloud[ chunk.first.first ] ;
-// 		auto uidl = chunk.first.second ;
-// 		auto& fm = chunk.second ;
-// 		if ( fm.bytes != ( fm.end - fm.beg ) )
-// 		{
-// 			continue ;
-// 		}
-// 		
-// 		if ( file_create( file, fm.bytes ) != 0 )
-// 		{
-// 			break ;
-// 		}
-// 
-// 		if ( email_recv(
-// 			service.pop3.c_str(),
-// 			service.user.c_str(),
-// 			service.pawd.c_str(),
-// 			uidl,
-// 			file,
-// 			0, fm.bytes, 0 ) != 200 )
-// 		{
-// 			continue ;
-// 		}
-// 
-// 		return true ;
-// 	}
-// 
-// 	return false ;
-// }
 
 inline int file_to_service( const service_meta& service, file_meta fm, const char* file, const char* to )
 {

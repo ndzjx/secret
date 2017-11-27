@@ -16,4 +16,10 @@
 #include <iostream>
 using namespace std ;
 
+template<class T>
+inline auto plan_make( T plan )
+{
+	return std::shared_ptr<void>( nullptr, [ plan ]( void* ){ return plan() ; } ) ;
+}
+
 #endif

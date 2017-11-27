@@ -5,22 +5,36 @@
 
 //////////////////////////////////////////////////////////////////////////
 
+// 每1秒更新一次云端信息
+void plan_update_cloud()
+{
+	auto timer = std::make_shared<boost::asio::deadline_timer>( global_pc().get_ios(), boost::posix_time::seconds( 1 ) ) ;
+	timer->async_wait( [ timer ]( boost::system::error_code ec )
+	{
+		if ( ec == 0 )
+		{
+			global_update_cloud() ;
+			plan_update_cloud() ;
+		}
+
+	} ) ;
+}
+
 int main( int argc, char *argv[] )
 {
-	ParallelCore pc ;
-	global_pc( &pc ) ;
-
-	ORMapper db( "g:/sample.db" ) ;
+	ParallelCore pc_task ;
+	global_pc( &pc_task ) ;
+	
+	ORMapper db( ( boost::filesystem::system_complete( __argv[ 0 ] ).remove_filename() /= ( "ecloud.db" ) ).generic_string() ) ;
 	global_db( &db ) ;
-
-	global_update_cloud() ;
 	
 	QApplication app( argc, argv ) ;
 
     CUploadWidget w ;
     w.show() ;
 
-    return app.exec() ;
+	plan_update_cloud() ;
+	return app.exec() ;
 }
 
 //////////////////////////////////////////////////////////////////////////
