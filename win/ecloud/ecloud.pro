@@ -18,15 +18,17 @@ CONFIG(debug, debug|release){
 }
 
 HEADERS += \
+    ecloud.h \
     CUploadWidget.h \
     CBrowserWidget.h \
-    CSettingWidget.h
+    CSettingWidget.h \
 
 SOURCES += \
-    CUploadWidget.cpp \
     main.cpp \
+    ecloud.cpp \
+    CUploadWidget.cpp \
     CBrowserWidget.cpp \
-    CSettingWidget.cpp
+    CSettingWidget.cpp \
 
 RESOURCES  = \
     ecloud.qrc
