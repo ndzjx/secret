@@ -1,5 +1,2 @@
-pyinstaller -F email_recv.py
-pyinstaller -F email_send.py
-pyinstaller -F email_stat.py
-pyinstaller -F email_subject.py
+pyinstaller -F email_service.py
 pyinstaller -F hash_md5.py
