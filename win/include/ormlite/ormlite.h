@@ -859,6 +859,12 @@ namespace BOT_ORM_Impl
         template <typename... Args>
         static inline auto JoinToTuple (const Args & ... args)
         {
+			auto kaka = [](auto&&...)
+			{
+
+			};
+
+			kaka(args...);
             // Unpacking Tricks :-)
             return decltype (std::tuple_cat (
                 QueryResultToTuple (args)...

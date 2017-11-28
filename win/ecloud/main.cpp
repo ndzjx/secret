@@ -33,6 +33,8 @@ int main( int argc, char *argv[] )
     CUploadWidget w ;
     w.show() ;
 
+	
+
 	plan_update_cloud() ;
 	return app.exec() ;
 }
