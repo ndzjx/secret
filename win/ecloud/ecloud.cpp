@@ -164,6 +164,7 @@ bool global_cloudfile_download( const string& id, const string& file )
 
 		for ( auto&& row : result )
 		{
+			auto tag = std::get< 1 >( row ).Value() ;
 			auto bytes = std::get< 2 >( row ).Value() ;
 			auto beg = std::get< 3 >( row ).Value() ;
 			auto end = std::get< 4 >( row ).Value() ;
@@ -176,18 +177,23 @@ bool global_cloudfile_download( const string& id, const string& file )
 			// try single chunk to file.
 			if ( bytes == ( end - beg ) )
 			{
+				if ( file_create( file.c_str(), bytes ) != 0 )
+				{
+					continue ;
+				}
+
 				if ( email_recv(
 					pop3.c_str(),
 					user.c_str(),
 					pawd.c_str(),
 					number,
 					file.c_str(),
-					0, bytes, 0 ) == 200 )
+					0, bytes, 0 ) != 200 )
 				{
-					return true ;
+					continue ;
 				}
 
-				continue ;
+				return true ;
 			}
 		}
 	}

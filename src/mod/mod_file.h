@@ -53,7 +53,7 @@ inline auto file_create( const char* file, size_t bytes )
 	auto ptr = file_open( file, "w" ) ;
 	if ( ptr )
 	{
-		_fseeki64( ptr.get(), bytes, SEEK_SET ) ;
+		_fseeki64( ptr.get(), bytes - 1, SEEK_SET ) ;
 		fputc( 0, ptr.get() ) ;
 		return 0 ;
 	}

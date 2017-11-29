@@ -5,10 +5,12 @@
 
 //////////////////////////////////////////////////////////////////////////
 
-// 每1秒更新一次云端信息
+void global_update_cloud() ;
+
+// 每10秒更新一次云端信息
 void plan_update_cloud()
 {
-	auto timer = std::make_shared<boost::asio::deadline_timer>( global_pc().get_ios(), boost::posix_time::seconds( 1 ) ) ;
+	auto timer = std::make_shared<boost::asio::deadline_timer>( global_pc().get_ios(), boost::posix_time::seconds( 10 ) ) ;
 	timer->async_wait( [ timer ]( boost::system::error_code ec )
 	{
 		if ( ec == 0 )
@@ -32,9 +34,7 @@ int main( int argc, char *argv[] )
 
     CUploadWidget w ;
     w.show() ;
-
 	
-
 	plan_update_cloud() ;
 	return app.exec() ;
 }
