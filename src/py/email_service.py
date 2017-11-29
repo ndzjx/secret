@@ -156,11 +156,11 @@ def webcore( environ, start_response ):
 
 httpd = make_server( '', 8811, webcore )
 
-def work_thread():
-    httpd.serve_forever()
+#def work_thread():
+#    httpd.serve_forever()
 
-for x in range( 7 ):
-    th = threading.Thread( target = work_thread, name = 'work_thread' )
-    th.start()
+#for x in range( 7 ):
+#    th = threading.Thread( target = work_thread, name = 'work_thread' )
+#    th.start()
 
 httpd.serve_forever()
