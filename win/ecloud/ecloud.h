@@ -11,3 +11,4 @@ void global_update_cloud() ;
 bool global_cloudfile_exist( const string& id ) ;
 vector<service_meta> global_cloudnodes() ;
 bool global_cloudfile_download( const string& id, const string& file ) ;
+int global_insert_cloudnode(const service_meta &data);

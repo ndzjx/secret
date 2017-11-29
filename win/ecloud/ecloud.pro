@@ -22,6 +22,7 @@ HEADERS += \
     CUploadWidget.h \
     CBrowserWidget.h \
     CSettingWidget.h \
+    CAddEmailDialog.h
 
 SOURCES += \
     main.cpp \
@@ -29,6 +30,7 @@ SOURCES += \
     CUploadWidget.cpp \
     CBrowserWidget.cpp \
     CSettingWidget.cpp \
+    CAddEmailDialog.cpp
 
 RESOURCES  = \
     ecloud.qrc

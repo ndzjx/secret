@@ -2,6 +2,7 @@
 #include <QApplication>
 #include "ecloud.h"
 #include "CUploadWidget.h"
+#include "CSettingWidget.h"
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -30,7 +31,8 @@ int main( int argc, char *argv[] )
 	
 	QApplication app( argc, argv ) ;
 
-    CUploadWidget w ;
+//    CUploadWidget w ;
+    CSettingWidget w;
     w.show() ;
 
 	

@@ -201,3 +201,12 @@ bool global_cloudfile_download( const string& id, const string& file )
 }
 
 //////////////////////////////////////////////////////////////////////////
+
+int global_insert_cloudnode(const service_meta &data)
+{
+    dbmeta_cloudnode model;
+    model.from_meta(data);
+    global_db().Insert(model);
+
+    return 0;
+}
