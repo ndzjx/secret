@@ -9,4 +9,5 @@ Thank you:
 [iguana](https://github.com/qicosmos/iguana/) |
 [Qt](https://www.qt.io/) |
 [ormpp](https://github.com/qicosmos/ormpp/) |
-[ORM Lite](https://github.com/BOT-Man-JL/ORM-Lite)
+[ORM Lite](https://github.com/BOT-Man-JL/ORM-Lite) |
+[cpprestsdk](https://github.com/Microsoft/cpprestsdk)
