@@ -155,10 +155,10 @@ bool global_cloudnode_add( const dbmeta_cloudnode& dbnode )
 
 	catch ( ... )
 	{
-
+		return false ;
 	}
 
-	return false ;
+	return true ;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -172,10 +172,10 @@ bool global_cloudnode_del( const dbmeta_cloudnode& dbnode )
 
 	catch ( ... )
 	{
-
+		return false ;
 	}
 
-	return false ;
+	return true ;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -189,10 +189,10 @@ bool global_cloudnode_fix( const dbmeta_cloudnode& dbnode )
 
 	catch ( ... )
 	{
-
+		return false ;
 	}
 
-	return false ;
+	return true ;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -250,6 +250,50 @@ vector<dbmeta_cloudfile> global_cloudfiles()
 
 //////////////////////////////////////////////////////////////////////////
 
+bool global_cloudfile_exist_thread_chunks( const string& id, vector<dbmeta_cloudfile>& chunks )
+{
+	try
+	{
+		dbmeta_cloudfile model ;
+		auto field = FieldExtractor{ model } ;
+		
+		auto head_chunk = global_db()
+			.Query( model )
+			.Where( field( model.id ) == id && field( model.beg ) == string( "0" ) ).ToVector() ;
+		if ( head_chunk.empty() )
+		{
+			return false ;
+		}
+
+		string bytes = head_chunk[ 0 ].bytes ;
+		string end = head_chunk[ 0 ].end ;
+		chunks.push_back( head_chunk[ 0 ] ) ;
+
+		while ( true )
+		{
+			auto chunk = global_db()
+				.Query( model )
+				.Where( field( model.id ) == id && field( model.beg ) == end ).ToVector() ;
+			if ( chunk.empty() )
+			{
+				break ;
+			}
+
+			end = chunk[ 0 ].end ;
+			chunks.push_back( chunk[ 0 ] ) ;
+		}
+
+		return bytes == end ;
+	}
+
+	catch ( ... )
+	{
+
+	}
+
+	return false ;
+}
+
 bool global_cloudfile_exist( const string& id )
 {
 	try
@@ -265,6 +309,40 @@ bool global_cloudfile_exist( const string& id )
 		{
 			return true ;
 		}
+
+		// check thread chunks.
+		if ( global_cloudfile_exist_thread_chunks( id, vector<dbmeta_cloudfile>() ) )
+		{
+			return true ;
+		}
+	}
+
+	catch ( ... )
+	{
+
+	}
+
+	return false ;
+}
+
+bool global_cloudchunk_exist( const dbmeta_cloudfile& chunk )
+{
+	try
+	{
+		dbmeta_cloudfile model ;
+		auto field = FieldExtractor{ model } ;
+		
+		auto head_chunk = global_db()
+			.Query( model )
+			.Where(
+				field( model.id ) == chunk.id &&
+				field( model.bytes ) == chunk.bytes &&
+				field( model.beg ) == chunk.beg &&
+				field( model.end ) == chunk.end ).ToVector() ;
+		if ( head_chunk.empty() == false )
+		{
+			return true ;
+		}
 	}
 
 	catch ( ... )
@@ -277,7 +355,7 @@ bool global_cloudfile_exist( const string& id )
 
 //////////////////////////////////////////////////////////////////////////
 
-bool global_cloudfile_download( const string& id, const string& file )
+bool global_cloudfile_download_single_chunk( const string& id, const string& file )
 {
 	try
 	{
@@ -324,6 +402,130 @@ bool global_cloudfile_download( const string& id, const string& file )
 	catch ( ... )
 	{
 
+	}
+
+	return false ;
+}
+
+bool global_cloudfile_download_multi_chunks( const string& id, const string& file )
+{
+	bool ret = true ;
+
+	try
+	{
+		dbmeta_cloudfile model_file ;
+		dbmeta_cloudnode model_node ;
+		auto field = FieldExtractor{ model_file, model_node } ;
+
+		vector<dbmeta_cloudfile> chunks ;
+		if ( global_cloudfile_exist_thread_chunks( id, chunks ) == false )
+		{
+			throw 1 ;
+		}
+
+		if ( chunks.empty() )
+		{
+			throw 1 ;
+		}
+
+		if ( file_create( file.c_str(), stoull( chunks[ 0 ].bytes ) ) != 0 )
+		{
+			throw 1 ;
+		}
+
+		ParallelMapReduce<bool> pmr ;
+		
+		for ( auto&& chunk : chunks )
+		{
+			pmr.map( global_pc(), [ chunk, file ]( auto result )
+			{
+				try
+				{
+					dbmeta_cloudfile model_file ;
+					dbmeta_cloudnode model_node ;
+					auto field = FieldExtractor{ model_file, model_node } ;
+
+					auto ck = global_db()
+						.Query( model_file )
+						.Join( model_node, field( model_file.service ) == field( model_node.user ) )
+						.Where(
+							field( model_file.id ) == chunk.id &&
+							field( model_file.bytes ) == chunk.bytes &&
+							field( model_file.beg ) == chunk.beg &&
+							field( model_file.end ) == chunk.end ).ToList() ;
+
+					bool ok = false ;
+					for ( auto&& row : ck )
+					{
+						auto beg = stoull( std::get< 3 >( row ).Value() ) ;
+						auto end = stoull( std::get< 4 >( row ).Value() ) ;
+						auto number = stoull( std::get< 6 >( row ).Value() ) ;
+
+						auto user = std::get< 7 >( row ).Value() ;
+						auto pawd = std::get< 8 >( row ).Value() ;
+						auto pop3 = std::get< 10 >( row ).Value() ;
+
+						if ( email_recv(
+							pop3.c_str(),
+							user.c_str(),
+							pawd.c_str(),
+							number,
+							file.c_str(),
+							0, end - beg, beg ) == 200 )
+						{
+							ok = true ;
+							break ;
+						}
+					}
+
+					if ( !ok )
+					{
+						throw 1 ;
+					}
+				}
+
+				catch ( ... )
+				{
+					result->set_value( false ) ;
+					return ;
+				}
+
+				result->set_value( true ) ;
+			} ) ;
+		}
+		
+		pmr.reduce( [ &ret ]( auto ok )
+		{
+			if ( ok == false )
+			{
+				ret = false ;
+			}
+		} ) ;
+	}
+
+	catch ( ... )
+	{
+		ret = false ;
+	}
+
+	if ( ret == false )
+	{
+		remove( file.c_str() ) ;
+	}
+
+	return ret ;
+}
+
+bool global_cloudfile_download( const string& id, const string& file )
+{
+	if ( global_cloudfile_download_single_chunk( id, file ) )
+	{
+		return true ;
+	}
+
+	if ( global_cloudfile_download_multi_chunks( id, file ) )
+	{
+		return true ;
 	}
 
 	return false ;

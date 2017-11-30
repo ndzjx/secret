@@ -69,6 +69,17 @@ struct dbmeta_cloudfile
 		number = to_string( i ) ;
 	}
 
+	auto to_meta() const
+	{
+		file_meta fm ;
+		fm.id = id ;
+		fm.tag = tag ;
+		fm.bytes = stoull( bytes ) ;
+		fm.beg = stoull( beg ) ;
+		fm.end = stoull( end ) ;
+		return fm ;
+	}
+
 	ORMAP( "dbmeta_cloudfile", id, tag, bytes, beg, end, service, number ) ;
 };
 

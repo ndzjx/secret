@@ -88,6 +88,33 @@ inline int meta_from_file( file_meta& obj, const char* file )
 	return 0 ;
 }
 
+inline auto meta_split_chunk( const file_meta& fm, int64_t chunk_size )
+{
+	vector<file_meta> ret ;
+	
+	auto remain_bytes = fm.bytes ;
+	for ( int64_t b = 0 ; remain_bytes ; b += chunk_size )
+	{
+		if ( remain_bytes <= chunk_size )
+		{
+			auto chunk = fm ;
+			chunk.beg = b ;
+			chunk.end = b + remain_bytes ;
+			ret.emplace_back( chunk ) ;
+			break ;
+		}
+
+		auto chunk = fm ;
+		chunk.beg = b ;
+		chunk.end = b + chunk_size ;
+		ret.emplace_back( chunk ) ;
+		
+		remain_bytes -= chunk_size ;
+	}
+
+	return ret ;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Service META
 struct service_meta
@@ -125,13 +152,7 @@ inline auto service_update( service_meta& service )
 
 //////////////////////////////////////////////////////////////////////////
 
-inline int file_to_service(
-	const service_meta& service,
-	file_meta fm,
-	const char* file,
-	const char* to,
-	int64_t seek = 0,
-	int64_t bytes = 0 )
+inline int file_to_service( const service_meta& service, file_meta fm, const char* file, const char* to )
 {
 	auto subject = meta_to_json( fm ) ;
 	if ( subject.empty() )
@@ -140,7 +161,7 @@ inline int file_to_service(
 	}
 	
 	boost::algorithm::replace_all( subject, "\"", "\"\"" ) ;
-	return email_send( service.smtp.c_str(), service.user.c_str(), service.pawd.c_str(), to, subject.c_str(), file, seek, bytes ) ;
+	return email_send( service.smtp.c_str(), service.user.c_str(), service.pawd.c_str(), to, subject.c_str(), file, fm.beg, fm.end - fm.beg ) ;
 }
 
 //////////////////////////////////////////////////////////////////////////

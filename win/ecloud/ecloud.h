@@ -4,6 +4,8 @@
 #include <mod_db.h>
 using namespace secret ;
 
+constexpr int64_t CHUNK_SIZE = 1024 * 1024 * 8 ;
+
 // 并行调度器
 ParallelCore& global_pc( ParallelCore* pc ) ;
 ParallelCore& global_pc() ;
@@ -35,6 +37,9 @@ vector<dbmeta_cloudfile> global_cloudfiles() ;
 
 // 检查文件是否在云端存在
 bool global_cloudfile_exist( const string& id ) ;
+
+// 检查文件块是否在云端存在
+bool global_cloudchunk_exist( const dbmeta_cloudfile& chunk ) ;
 
 // 从云端下载文件
 bool global_cloudfile_download( const string& id, const string& file ) ;
