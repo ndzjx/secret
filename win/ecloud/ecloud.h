@@ -20,3 +20,6 @@ vector<service_meta> global_cloudnodes() ;
 
 // 从云端下载文件
 bool global_cloudfile_download( const string& id, const string& file ) ;
+
+// 更新云端状态
+void global_update_cloud( std::shared_ptr<void> fina ) ;

@@ -37,22 +37,63 @@ ORMapper& global_db()
 
 //////////////////////////////////////////////////////////////////////////
 
-void global_update_cloud()
+void global_update_cloud( std::shared_ptr<void> fina )
 {
-	auto task_insert_index = []( service_meta service, int64_t i )
+	auto task_finally = [ fina ]( auto ptr_service, auto ptr_news )
 	{
 		try
 		{
-			auto subject = email_subject( service.pop3.c_str(), service.user.c_str(), service.pawd.c_str(), i ) ;
+			auto&& service = *ptr_service ;
+			auto&& news = *ptr_news ;
+
+			if ( news )
+			{
+				dbmeta_cloudnode node ;
+				service.mails += news ;
+				node.from_meta( service ) ;
+				global_db().Update( node ) ;
+			}
+		}
+
+		catch ( ... )
+		{
+
+		}
+	} ;
+
+	auto task_insert_index = [ task_finally ]( auto self, auto ptr_service, auto ptr_news )
+	{
+		try
+		{
+			auto&& service = *ptr_service ;
+			auto&& news = *ptr_news ;
+
+			const auto i = service.mails + news + 1 ;
+			auto subject = email_subject(
+				service.pop3.c_str(),
+				service.user.c_str(),
+				service.pawd.c_str(), i ) ;
 			
+			if ( subject.empty() )
+			{
+				global_pc().post( std::bind( task_finally, ptr_service, ptr_news ) ) ;
+				return ;
+			}
+
+			++news ;
+			global_pc().post( std::bind( self, self, ptr_service, ptr_news ) ) ;
+
 			file_meta fm ;
-			meta_from_json( fm, subject.c_str() ) ;
+			if ( meta_from_json( fm, subject.c_str() ) != 0 )
+			{
+				return ;
+			}
 
 			if ( fm.id.empty() || fm.bytes == 0 || fm.end == 0 )
 			{
 				return ;
 			}
-			
+
 			dbmeta_cloudfile index ;
 			index.from_meta( fm, service.user, i ) ;
 			global_db().Insert( index ) ;
@@ -70,23 +111,9 @@ void global_update_cloud()
 		{
 			for ( auto&& node : global_db().Query( dbmeta_cloudnode{} ).ToList() )
 			{
-				// check node update.
-				auto service = node.to_meta() ;
-				auto news = service_update( service ) ;
-				if ( news == 0 )
-				{
-					continue ;
-				}
-
-				// update db for node information.
-				node.from_meta( service ) ;
-				global_db().Update( node ) ;
-
-				// update cloudfile index.
-				for ( int64_t i = service.mails - news + 1 ; i <= service.mails ; ++i )
-				{
-					global_pc().post( std::bind( task_insert_index, service, i ) ) ;
-				}
+				auto ptr_service = std::make_shared< decltype( node.to_meta() ) >( node.to_meta() ) ;
+				auto ptr_news = std::make_shared< atomic_int64_t >( 0 ) ;
+				global_pc().post( std::bind( task_insert_index, task_insert_index, ptr_service, ptr_news ) ) ;
 			}
 		}
 
@@ -98,6 +125,8 @@ void global_update_cloud()
 
 	global_pc().post( task_check_update ) ;
 }
+
+//////////////////////////////////////////////////////////////////////////
 
 bool global_cloudfile_exist( const string& id )
 {
@@ -124,6 +153,8 @@ bool global_cloudfile_exist( const string& id )
 	return false ;
 }
 
+//////////////////////////////////////////////////////////////////////////
+
 vector<service_meta> global_cloudnodes()
 {
 	vector<service_meta> ret ;
@@ -144,6 +175,8 @@ vector<service_meta> global_cloudnodes()
 
 	return ret ;
 }
+
+//////////////////////////////////////////////////////////////////////////
 
 bool global_cloudfile_download( const string& id, const string& file )
 {

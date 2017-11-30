@@ -44,6 +44,11 @@ inline int meta_from_json( file_meta& obj, const char* str )
 {
 	try
 	{
+		if ( strlen( str ) == 0 )
+		{
+			return 1 ;
+		}
+		
 		iguana::json::from_json( obj, str ) ;
 	}
 
@@ -117,6 +122,8 @@ inline auto service_update( service_meta& service )
 
 	return decltype( service.mails )( 0 ) ;
 }
+
+//////////////////////////////////////////////////////////////////////////
 
 inline int file_to_service( const service_meta& service, file_meta fm, const char* file, const char* to )
 {

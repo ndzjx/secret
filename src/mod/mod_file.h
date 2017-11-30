@@ -13,6 +13,11 @@ inline auto file_plan_remove( const char* file )
 
 inline auto file_close( FILE* ptr )
 {
+	if ( ptr == nullptr )
+	{
+		return shared_ptr<FILE>( ptr, [](auto){} ) ;
+	}
+
 	return shared_ptr<FILE>( ptr, fclose ) ;
 }
 
