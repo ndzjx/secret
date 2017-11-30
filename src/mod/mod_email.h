@@ -18,7 +18,9 @@ inline auto email_send(
 	const char* password,
 	const char* to,
 	const char* subject,
-	const char* file )
+	const char* file,
+	int64_t seek,
+	int64_t bytes )
 {
 	using namespace boost::filesystem ;
 	
@@ -46,6 +48,14 @@ inline auto email_send(
 	
 	raw += R"( ")" ;
 	raw += file ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
+	raw += to_string( seek ) ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
+	raw += to_string( bytes ) ;
 	raw += R"(")" ;
 	
 	return exec_proxy( raw.c_str() ) ;

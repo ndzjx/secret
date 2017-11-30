@@ -14,9 +14,9 @@ var_user = sys.argv[ 2 ]
 var_pawd = sys.argv[ 3 ]
 var_uidl = sys.argv[ 4 ]
 var_file = sys.argv[ 5 ]
-var_beg  = sys.argv[ 6 ]
-var_end  = sys.argv[ 7 ]
-var_seek = sys.argv[ 8 ]
+var_beg  = int( sys.argv[ 6 ] )
+var_end  = int( sys.argv[ 7 ] )
+var_seek = int( sys.argv[ 8 ] )
 
 def decode_str( p ):
 	value, charset = decode_header( p )[ 0 ]
@@ -38,8 +38,8 @@ try:
 	msg = Parser().parsestr( body )
 
 	f = open( var_file, 'rb+' )
-	f.seek( int( var_seek ) )
-	f.write( base64.b64decode( msg.get_payload() )[ int( var_beg ) : int( var_end ) ] )
+	f.seek( var_seek )
+	f.write( base64.b64decode( msg.get_payload() )[ var_beg : var_end ] )
 	f.close()
 	
 	server.quit()

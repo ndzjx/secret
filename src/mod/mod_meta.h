@@ -125,7 +125,13 @@ inline auto service_update( service_meta& service )
 
 //////////////////////////////////////////////////////////////////////////
 
-inline int file_to_service( const service_meta& service, file_meta fm, const char* file, const char* to )
+inline int file_to_service(
+	const service_meta& service,
+	file_meta fm,
+	const char* file,
+	const char* to,
+	int64_t seek = 0,
+	int64_t bytes = 0 )
 {
 	auto subject = meta_to_json( fm ) ;
 	if ( subject.empty() )
@@ -134,7 +140,7 @@ inline int file_to_service( const service_meta& service, file_meta fm, const cha
 	}
 	
 	boost::algorithm::replace_all( subject, "\"", "\"\"" ) ;
-	return email_send( service.smtp.c_str(), service.user.c_str(), service.pawd.c_str(), to, subject.c_str(), file ) ;
+	return email_send( service.smtp.c_str(), service.user.c_str(), service.pawd.c_str(), to, subject.c_str(), file, seek, bytes ) ;
 }
 
 //////////////////////////////////////////////////////////////////////////
