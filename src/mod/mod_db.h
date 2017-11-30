@@ -14,12 +14,12 @@ namespace secret {
 
 struct dbmeta_cloudnode
 {
-	string		user	= ""	;
-	string		pawd	= ""	;
-	string		smtp	= ""	;
-	string		pop3	= ""	;
-	int64_t		mails	= 0		;
-	int64_t		octets	= 0		;
+	string		user	;
+	string		pawd	;
+	string		smtp	;
+	string		pop3	;
+	string		mails	;
+	string		octets	;
 
 	auto to_meta() const
 	{
@@ -28,8 +28,8 @@ struct dbmeta_cloudnode
 		ret.pawd = pawd ;
 		ret.smtp = smtp ;
 		ret.pop3 = pop3 ;
-		ret.mails = mails ;
-		ret.octets = octets ;
+		ret.mails = stoull( mails ) ;
+		ret.octets = stoull( octets ) ;
 		return ret ;
 	}
 
@@ -39,8 +39,8 @@ struct dbmeta_cloudnode
 		pawd = param.pawd ;
 		smtp = param.smtp ;
 		pop3 = param.pop3 ;
-		mails = param.mails ;
-		octets = param.octets ;
+		mails = to_string( param.mails ) ;
+		octets = to_string( param.octets ) ;
 	}
 	
 	ORMAP( "dbmeta_cloudnode", user, pawd, smtp, pop3, mails, octets ) ;
@@ -48,25 +48,25 @@ struct dbmeta_cloudnode
 
 struct dbmeta_cloudfile
 {
-	string		id		= ""	;
-	string		tag		= ""	;
-	int64_t		bytes	= 0		;
-	int64_t		beg		= 0		;
-	int64_t		end		= 0		;
+	string		id		;
+	string		tag		;
+	string		bytes	;
+	string		beg		;
+	string		end		;
 	
-	string		service	= ""	;
-	int64_t		number	= 0		;
+	string		service	;
+	string		number	;
 
 	void from_meta( const file_meta& param, const string& node, int64_t i )
 	{
 		id = param.id ;
 		tag = param.tag ;
-		bytes = param.bytes ;
-		beg = param.beg ;
-		end = param.end ;
+		bytes = to_string( param.bytes ) ;
+		beg = to_string( param.beg ) ;
+		end = to_string( param.end ) ;
 
 		service = node ;
-		number = i ;
+		number = to_string( i ) ;
 	}
 
 	ORMAP( "dbmeta_cloudfile", id, tag, bytes, beg, end, service, number ) ;

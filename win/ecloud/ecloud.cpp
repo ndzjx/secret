@@ -257,13 +257,13 @@ bool global_cloudfile_exist( const string& id )
 		dbmeta_cloudfile model ;
 		auto field = FieldExtractor{ model } ;
 		
-		for ( auto&& cf : global_db().Query( model ).Where( field( model.id ) == id ).ToVector() )
+		// check single chunk.
+		if ( global_db().Query( model ).Where( 
+			field( model.id ) == id &&
+			field( model.beg ) == string( "0" ) &&
+			field( model.bytes ) == field( model.end ) ).ToVector().empty() == false )
 		{
-			// single chunk file.
-			if ( cf.bytes == ( cf.end - cf.beg ) )
-			{
-				return true ;
-			}
+			return true ;
 		}
 	}
 
@@ -285,48 +285,39 @@ bool global_cloudfile_download( const string& id, const string& file )
 		dbmeta_cloudnode model_node ;
 		auto field = FieldExtractor{ model_file, model_node } ;
 
-		auto result = global_db().Query( model_file )
+		auto single_chunk = global_db().Query( model_file )
 			.Join( model_node, field( model_file.service ) == field( model_node.user ) )
-			.Where( field( model_file.id ) == id ).ToList() ;
-		
-		if ( result.empty() )
-		{
-			return false ;
-		}
+			.Where( 
+				field( model_file.id ) == id &&
+				field( model_file.beg ) == string( "0" ) &&
+				field( model_file.bytes ) == field( model_file.end ) ).ToList() ;
 
-		for ( auto&& row : result )
+		for ( auto&& row : single_chunk )
 		{
-			auto tag = std::get< 1 >( row ).Value() ;
-			auto bytes = std::get< 2 >( row ).Value() ;
-			auto beg = std::get< 3 >( row ).Value() ;
-			auto end = std::get< 4 >( row ).Value() ;
-			auto number = std::get< 6 >( row ).Value() ;
+			auto bytes = stoull( std::get< 2 >( row ).Value() ) ;
+			auto number = stoull( std::get< 6 >( row ).Value() ) ;
 
 			auto user = std::get< 7 >( row ).Value() ;
 			auto pawd = std::get< 8 >( row ).Value() ;
 			auto pop3 = std::get< 10 >( row ).Value() ;
 
-			// try single chunk to file.
-			if ( bytes == ( end - beg ) )
+			if ( file_create( file.c_str(), bytes ) != 0 )
 			{
-				if ( file_create( file.c_str(), bytes ) != 0 )
-				{
-					continue ;
-				}
-
-				if ( email_recv(
-					pop3.c_str(),
-					user.c_str(),
-					pawd.c_str(),
-					number,
-					file.c_str(),
-					0, bytes, 0 ) != 200 )
-				{
-					continue ;
-				}
-
-				return true ;
+				continue ;
 			}
+
+			if ( email_recv(
+				pop3.c_str(),
+				user.c_str(),
+				pawd.c_str(),
+				number,
+				file.c_str(),
+				0, bytes, 0 ) != 200 )
+			{
+				continue ;
+			}
+
+			return true ;
 		}
 	}
 
