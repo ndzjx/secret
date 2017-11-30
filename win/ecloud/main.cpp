@@ -6,7 +6,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 // 计划: 更新云端信息
-void plan_update_cloud()
+void plan_cloudnodes_update()
 {
 	auto timer = std::make_shared<boost::asio::deadline_timer>( global_pc().get_ios(), boost::posix_time::seconds( 2 ) ) ;
 
@@ -14,7 +14,7 @@ void plan_update_cloud()
 	{
 		if ( global_pc().get_ios().stopped() == false )
 		{
-			plan_update_cloud() ;
+			plan_cloudnodes_update() ;
 		}
 	} ) ;
 	
@@ -22,7 +22,7 @@ void plan_update_cloud()
 	{
 		if ( ec == 0 )
 		{
-			global_update_cloud( fina ) ;
+			global_cloudnodes_update( fina ) ;
 		}
 	} ) ;
 }
@@ -34,8 +34,8 @@ int main( int argc, char *argv[] )
 	
 	ORMapper db( ( boost::filesystem::system_complete( __argv[ 0 ] ).remove_filename() /= ( "ecloud.db" ) ).generic_string() ) ;
 	global_db( &db ) ;
-
-	plan_update_cloud() ;
+	
+	plan_cloudnodes_update() ;
 
 	QApplication app( argc, argv ) ;
     CUploadWidget w ;

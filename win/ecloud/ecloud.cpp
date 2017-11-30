@@ -37,7 +37,25 @@ ORMapper& global_db()
 
 //////////////////////////////////////////////////////////////////////////
 
-void global_update_cloud( std::shared_ptr<void> fina )
+vector<dbmeta_cloudnode> global_cloudnodes()
+{
+	try
+	{
+		dbmeta_cloudnode model ;
+		return global_db().Query( model ).ToVector() ;
+	}
+
+	catch ( ... )
+	{
+
+	}
+
+	return vector<dbmeta_cloudnode>() ;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+void global_cloudnodes_update( std::shared_ptr<void> fina )
 {
 	auto task_finally = [ fina ]( auto ptr_service, auto ptr_news )
 	{
@@ -128,13 +146,117 @@ void global_update_cloud( std::shared_ptr<void> fina )
 
 //////////////////////////////////////////////////////////////////////////
 
+bool global_cloudnode_add( const dbmeta_cloudnode& dbnode )
+{
+	try
+	{
+		global_db().Insert( dbnode ) ;
+	}
+
+	catch ( ... )
+	{
+
+	}
+
+	return false ;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+bool global_cloudnode_del( const dbmeta_cloudnode& dbnode )
+{
+	try
+	{
+		global_db().Delete( dbnode ) ;
+	}
+
+	catch ( ... )
+	{
+
+	}
+
+	return false ;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+bool global_cloudnode_fix( const dbmeta_cloudnode& dbnode )
+{
+	try
+	{
+		global_db().Update( dbnode ) ;
+	}
+
+	catch ( ... )
+	{
+
+	}
+
+	return false ;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+bool global_cloudnode_get( const string& user, dbmeta_cloudnode& dbnode )
+{
+	try
+	{
+		dbmeta_cloudnode model ;
+		auto field = FieldExtractor{ model } ;
+
+		auto res = global_db().Query( model ).Where( field( model.user ) == user ).ToVector() ;
+		if ( res.size() == 1 )
+		{
+			dbnode = res[ 0 ] ;
+			return true ;
+		}
+	}
+
+	catch ( ... )
+	{
+
+	}
+
+	return false ;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+vector<dbmeta_cloudfile> global_cloudfiles()
+{
+	vector<dbmeta_cloudfile> ret ;
+
+	try
+	{
+		dbmeta_cloudfile model ;
+		auto field = FieldExtractor{ model } ;
+		
+		for ( auto&& cf : global_db().Query( model ).ToVector() )
+		{
+			if ( global_cloudfile_exist( cf.id ) )
+			{
+				ret.emplace_back( cf ) ;
+			}
+		}
+	}
+
+	catch ( ... )
+	{
+
+	}
+
+	return ret ;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
 bool global_cloudfile_exist( const string& id )
 {
 	try
 	{
 		dbmeta_cloudfile model ;
 		auto field = FieldExtractor{ model } ;
-
+		
 		for ( auto&& cf : global_db().Query( model ).Where( field( model.id ) == id ).ToVector() )
 		{
 			// single chunk file.
@@ -151,29 +273,6 @@ bool global_cloudfile_exist( const string& id )
 	}
 
 	return false ;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-vector<service_meta> global_cloudnodes()
-{
-	vector<service_meta> ret ;
-
-	try
-	{
-		dbmeta_cloudnode model ;
-		for ( auto&& node : global_db().Query( model ).ToVector() )
-		{
-			ret.emplace_back( node.to_meta() ) ;
-		}
-	}
-
-	catch ( ... )
-	{
-
-	}
-
-	return ret ;
 }
 
 //////////////////////////////////////////////////////////////////////////

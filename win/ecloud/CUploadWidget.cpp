@@ -112,8 +112,10 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 			}
 
 			// 任意一个节点上传成功即成功
-			for ( auto&& node : global_cloudnodes() )
+			for ( auto&& dbnode : global_cloudnodes() )
 			{
+				auto node = dbnode.to_meta() ;
+
 				// 上传中
 				emit tableItemStatusChanged( row, 2 ) ;
 

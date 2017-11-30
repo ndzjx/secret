@@ -12,14 +12,29 @@ ParallelCore& global_pc() ;
 ORMapper& global_db( ORMapper* db ) ;
 ORMapper& global_db() ;
 
+// 获取云端所有节点
+vector<dbmeta_cloudnode> global_cloudnodes() ;
+
+// 更新云端状态
+void global_cloudnodes_update( std::shared_ptr<void> fina ) ;
+
+// 添加云端节点
+bool global_cloudnode_add( const dbmeta_cloudnode& dbnode ) ;
+
+// 删除云端节点
+bool global_cloudnode_del( const dbmeta_cloudnode& dbnode ) ;
+
+// 更新云端节点
+bool global_cloudnode_fix( const dbmeta_cloudnode& dbnode ) ;
+
+// 获取节点
+bool global_cloudnode_get( const string& user, dbmeta_cloudnode& dbnode ) ;
+
+// 获取云端所有文件
+vector<dbmeta_cloudfile> global_cloudfiles() ;
+
 // 检查文件是否在云端存在
 bool global_cloudfile_exist( const string& id ) ;
 
-// 获取云端所有节点
-vector<service_meta> global_cloudnodes() ;
-
 // 从云端下载文件
 bool global_cloudfile_download( const string& id, const string& file ) ;
-
-// 更新云端状态
-void global_update_cloud( std::shared_ptr<void> fina ) ;
