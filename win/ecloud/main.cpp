@@ -3,6 +3,7 @@
 #include "ecloud.h"
 #include "CUploadWidget.h"
 #include "CSettingWidget.h"
+#include "CBrowserWidget.h"
 
 #include <cpprest/http_client.h>
 #include <cpprest/filestream.h>
@@ -32,17 +33,17 @@ void plan_update_cloud()
 
 int main( int argc, char *argv[] )
 {
-	        // Create http_client to send the request.
-        http_client client(U("http://www.baidu.com/"));
+//	        // Create http_client to send the request.
+//        http_client client(U("http://www.baidu.com/"));
 
-        // Build request URI and start the request.
-        uri_builder builder(U("/search"));
-        builder.append_query(U("q"), U("cpprestsdk github"));
-        client.request(methods::GET, builder.to_string());
+//        // Build request URI and start the request.
+//        uri_builder builder(U("/search"));
+//        builder.append_query(U("q"), U("cpprestsdk github"));
+//        client.request(methods::GET, builder.to_string());
 
 		
 
-	return 0 ;
+//	return 0 ;
 
 	ParallelCore pc_task ;
 	global_pc( &pc_task ) ;
@@ -53,7 +54,8 @@ int main( int argc, char *argv[] )
 	QApplication app( argc, argv ) ;
 
 //    CUploadWidget w ;
-    CSettingWidget w;
+//    CSettingWidget w;
+    CBrowserWidget w;
     w.show() ;
 	
 	plan_update_cloud() ;

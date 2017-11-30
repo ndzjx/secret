@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+class QTableWidget;
+
 class CBrowserWidget : public QWidget
 {
     Q_OBJECT
@@ -12,6 +14,8 @@ public:
 signals:
 
 public slots:
+private:
+    QTableWidget *m_pTblWidgetFile;
 };
 
 #endif // CBROWSERWIDGET_H

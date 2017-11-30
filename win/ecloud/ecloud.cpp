@@ -202,11 +202,37 @@ bool global_cloudfile_download( const string& id, const string& file )
 
 //////////////////////////////////////////////////////////////////////////
 
-int global_insert_cloudnode(const service_meta &data)
+void global_insert_cloudnode(const service_meta &data)
 {
     dbmeta_cloudnode model;
     model.from_meta(data);
     global_db().Insert(model);
+}
 
-    return 0;
+void global_delete_cloudnode(const service_meta &data)
+{
+    dbmeta_cloudnode model;
+    model.from_meta(data);
+    global_db().Delete(model);
+}
+
+vector<dbmeta_cloudfile> global_cloudfiles()
+{
+    vector<dbmeta_cloudfile> ret ;
+
+    try
+    {
+        dbmeta_cloudfile model ;
+        for ( auto&& node : global_db().Query( model ).ToVector() )
+        {
+            ret.emplace_back( node) ;
+        }
+    }
+
+    catch ( ... )
+    {
+
+    }
+
+    return ret ;
 }

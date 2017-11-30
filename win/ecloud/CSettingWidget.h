@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+class QTableWidget;
+
 class CSettingWidget : public QWidget
 {
     Q_OBJECT
@@ -12,6 +14,11 @@ public:
 signals:
 
 public slots:
+
+private:
+    void addEmailtoWidget(const QString &acnt, const QString &pwd, const QString &smtp, const QString &pop3);
+
+    QTableWidget *m_pTblWidgetEmail;
 };
 
 #endif // CSETTINGWIDGET_H
