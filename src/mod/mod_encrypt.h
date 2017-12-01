@@ -7,6 +7,7 @@
 #include "mod_pipe.h"
 #include "mod_file.h"
 #include "openssl/des.h"
+#include "LzmaLib.h"
 
 namespace secret {
 
@@ -270,6 +271,114 @@ inline bool decrypt(const string &source, string &destination, const string &key
 		destination = oOut.str();
 	}
 	return bRet;
+}
+
+inline bool lzmaCompress(std::istream &source, std::ostream &destination)
+{
+    source.seekg(0, ios::end);
+    size_t nSrcLen = source.tellg();
+    if(0 == nSrcLen)
+    {
+        return true;
+    }
+    source.seekg(0, source.beg);
+
+    string sSrcBuffer;
+    string sDestBuffer;
+
+    sSrcBuffer.resize(nSrcLen, 0);
+    source.read((char*)sSrcBuffer.data(), nSrcLen);
+
+    size_t nDestLen = nSrcLen * 2;
+    sDestBuffer.resize(nDestLen, 0);
+
+    unsigned char aProp[5] = {0};
+    size_t nProp = 5;
+
+    int nRet = LzmaCompress((unsigned char*)sDestBuffer.c_str(), &nDestLen,
+                            (unsigned char*)sSrcBuffer.c_str(), nSrcLen,
+                            aProp, &nProp,
+                            2, (1 << 18), 3, 0, 2, 32, 2);
+    if (SZ_OK != nRet)
+    {
+        return false;
+    }
+
+    __int64 nSrcLenValue = nSrcLen;
+    __int64 nPropValue = nProp;
+    destination.write((char*)&nSrcLenValue, sizeof(__int64));
+    destination.write((char*)&nPropValue, sizeof(__int64));
+    destination.write((char*)aProp, sizeof(aProp));
+    destination.write(sDestBuffer.c_str(), nDestLen);
+
+    return true;
+}
+
+inline bool lzmaUnCompress(std::istream &source, std::ostream &destination)
+{
+    source.seekg(0, ios::end);
+    size_t nDataSize = source.tellg();
+    if(0 == nDataSize)
+    {
+        return true;
+    }
+    source.seekg(0, ios::beg);
+
+    size_t nDestLen = 0;
+    unsigned char aProp[5] = {0};
+    size_t nProp = 0;
+
+    __int64 nDestLenValue;
+    __int64 nPropValue;
+    source.read((char*)&nDestLenValue, sizeof(__int64));
+    source.read((char*)&nPropValue, sizeof(__int64));
+    source.read((char*)aProp, sizeof(aProp));
+
+    nDestLen = nDestLenValue;
+    nProp = nPropValue;
+
+    string sSrcBuffer;
+    string sDestBuffer;
+
+    size_t nSrcLen = nDataSize - source.tellg();
+    sSrcBuffer.resize(nSrcLen, 0);
+    source.read((char*)sSrcBuffer.data(), nSrcLen);
+    sDestBuffer.resize(nDestLen, 0);
+
+    int nRet = LzmaUncompress((unsigned char*)sDestBuffer.c_str(), &nDestLen,
+                              (unsigned char*)sSrcBuffer.c_str(),
+                              &nSrcLen, aProp, nProp);
+    if(SZ_OK != nRet)
+    {
+        return false;
+    }    
+    destination.write(sDestBuffer.c_str(), nDestLen);
+
+    return true;
+}
+
+inline bool lzmaCompress(const string &source, string &destination)
+{
+    istringstream oIn(source, ios::binary);
+    ostringstream oOut(ios::binary);
+    bool bRet = lzmaCompress(oIn, oOut);
+    if(bRet)
+    {
+        destination = oOut.str();
+    }
+    return bRet;
+}
+
+inline bool lzmaUnCompress(const string &source, string &destination)
+{
+    istringstream oIn(source, ios::binary);
+    ostringstream oOut(ios::binary);
+    bool bRet = lzmaUnCompress(oIn, oOut);
+    if(bRet)
+    {
+        destination = oOut.str();
+    }
+    return bRet;
 }
 
 }
