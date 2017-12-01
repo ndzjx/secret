@@ -2,6 +2,8 @@
 #include <QApplication>
 #include "ecloud.h"
 #include "CUploadWidget.h"
+#include "CSettingWidget.h"
+#include "CBrowserWidget.h"
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -38,7 +40,9 @@ int main( int argc, char *argv[] )
 	plan_cloudnodes_update() ;
 
 	QApplication app( argc, argv ) ;
-    CUploadWidget w ;
+//    CUploadWidget w ;
+    CSettingWidget w;
+//    CBrowserWidget w;
     w.show() ;
 	app.exec() ;
 	
