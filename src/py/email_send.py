@@ -24,19 +24,15 @@ with open( sys.argv[ 6 ], 'rb' ) as f:
 	else:
 		var_body = f.read( var_size )
 
-def transformaddr( p ) :
-    name, addr = parseaddr( p )
-    return formataddr( ( Header( name, 'utf-8' ).encode(), addr ) )
-
 msg = MIMEText( var_body, 'plain', 'utf-8' )
-msg['From'] = transformaddr( 'secret <%s>' % var_from )
-msg['To'] = transformaddr( 'msg <%s>' % var_to )
+msg['From'] = formataddr( ( Header( 'secret', 'utf-8' ).encode(), var_from ) )
+msg['To'] = ', '.join( var_to.split( ',' ) )
 msg['Subject'] = Header( var_subject, 'utf-8' ).encode()
 
 try:
 	server = smtplib.SMTP( var_smtp, 25 )
 	server.login( var_from, var_password )
-	server.sendmail( var_from, [var_to], msg.as_string() )
+	server.sendmail( var_from, var_to.split( ',' ), msg.as_string() )
 	server.quit()
 except Exception as e:
 	sys.exit( 500 )
