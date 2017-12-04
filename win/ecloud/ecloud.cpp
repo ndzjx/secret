@@ -123,15 +123,86 @@ void global_cloudnodes_update( std::shared_ptr<void> fina )
 		}
 	} ;
 
-	auto task_check_update = [ task_insert_index ]
+	auto task_check_number = [ task_insert_index ]( auto ptr_service, auto ptr_news )
 	{
 		try
 		{
-			for ( auto&& node : global_db().Query( dbmeta_cloudnode{} ).ToList() )
+			auto&& service = *ptr_service ;
+			
+			dbmeta_cloudfile model ;
+			auto field = FieldExtractor{ model } ;
+			
+			auto chunks = global_db()
+				.Query( model )
+				.Where( field( model.service ) == service.user ).ToVector() ;
+
+			std::sort( chunks.begin(), chunks.end(), []( const auto& a, const auto& b )
+			{
+				return stoull( a.number ) > stoull( b.number ) ;
+			} ) ;
+
+			bool rebuild = false ;
+			for ( auto&& chunk : chunks )
+			{
+				auto subject = email_subject(
+					service.pop3.c_str(),
+					service.user.c_str(),
+					service.pawd.c_str(),
+					stoull( chunk.number ) ) ;
+					
+				file_meta fm_remote ;
+				if ( meta_from_json( fm_remote, subject.c_str() ) == 0 )
+				{
+					auto fm_local = chunk.to_meta() ;
+					if (
+						fm_remote.id == fm_local.id &&
+						fm_remote.bytes == fm_local.bytes &&
+						fm_remote.beg == fm_local.beg &&
+						fm_remote.end == fm_local.end )
+					{
+						break ;
+					}
+				}
+				
+				rebuild = true ;
+				global_db().Delete( model,
+					field( model.id ) == chunk.id &&
+					field( model.service ) == chunk.service &&
+					field( model.number ) == chunk.number ) ;
+			}
+
+			if ( rebuild )
+			{
+				auto mails = global_db()
+					.Query( model )
+					.Where( field( model.service ) == service.user ).ToVector() ;
+
+				auto fix = service ;
+				fix.mails = mails.size() ;
+					
+				dbmeta_cloudnode cn ;
+				cn.from_meta( fix ) ;
+				global_db().Update( cn ) ;
+			}
+
+			global_pc().post( std::bind( task_insert_index, task_insert_index, ptr_service, ptr_news ) ) ;
+		}
+
+		catch( ... )
+		{
+
+		}
+	} ;
+
+	auto task_main = [ task_check_number ]
+	{
+		try
+		{
+			for ( auto&& node : global_db().Query( dbmeta_cloudnode{} ).ToVector() )
 			{
 				auto ptr_service = std::make_shared< decltype( node.to_meta() ) >( node.to_meta() ) ;
 				auto ptr_news = std::make_shared< atomic_int64_t >( 0 ) ;
-				global_pc().post( std::bind( task_insert_index, task_insert_index, ptr_service, ptr_news ) ) ;
+				global_pc().post( std::bind( task_check_number, ptr_service, ptr_news ) ) ;
 			}
 		}
 
@@ -141,7 +212,7 @@ void global_cloudnodes_update( std::shared_ptr<void> fina )
 		}
 	} ;
 
-	global_pc().post( task_check_update ) ;
+	global_pc().post( task_main ) ;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -368,7 +439,7 @@ bool global_cloudfile_download_single_chunk( const string& id, const string& fil
 			.Where( 
 				field( model_file.id ) == id &&
 				field( model_file.beg ) == string( "0" ) &&
-				field( model_file.bytes ) == field( model_file.end ) ).ToList() ;
+				field( model_file.bytes ) == field( model_file.end ) ).ToVector() ;
 
 		for ( auto&& row : single_chunk )
 		{
@@ -452,7 +523,7 @@ bool global_cloudfile_download_multi_chunks( const string& id, const string& fil
 							field( model_file.id ) == chunk.id &&
 							field( model_file.bytes ) == chunk.bytes &&
 							field( model_file.beg ) == chunk.beg &&
-							field( model_file.end ) == chunk.end ).ToList() ;
+							field( model_file.end ) == chunk.end ).ToVector() ;
 
 					bool ok = false ;
 					for ( auto&& row : ck )

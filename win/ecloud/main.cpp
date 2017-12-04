@@ -46,7 +46,7 @@ int main( int argc, char *argv[] )
 	ORMapper db( ( boost::filesystem::system_complete( __argv[ 0 ] ).remove_filename() /= ( "ecloud.db" ) ).generic_string() ) ;
 	global_db( &db ) ;
 	boost::this_thread::sleep( boost::posix_time::milliseconds( 500 ) ) ;
-
+	
 	pLogo->showMessage( "Initialization Tasks ...", Qt::AlignRight | Qt::AlignBottom, Qt::yellow ) ;
 	plan_cloudnodes_update() ;
 	boost::this_thread::sleep( boost::posix_time::milliseconds( 500 ) ) ;
