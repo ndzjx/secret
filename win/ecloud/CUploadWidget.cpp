@@ -17,7 +17,7 @@ CUploadWidget::CUploadWidget(QWidget *parent) :
 	m_pTable = new QTableWidget( 0, 3, this ) ;
 	m_pTable->verticalHeader()->setVisible( false ) ;
 	m_pTable->horizontalHeader()->setStretchLastSection( true ) ;
-	m_pTable->setColumnWidth( 0, 250 ) ;
+	m_pTable->setColumnWidth( 0, 600 ) ;
 	m_pTable->setColumnWidth( 1, 80 ) ;
     m_pTable->setHorizontalHeaderLabels( QStringList()
 		<< QStringLiteral( "文件" )
@@ -27,9 +27,10 @@ CUploadWidget::CUploadWidget(QWidget *parent) :
 	auto pLayout = new QVBoxLayout( this ) ;
 	pLayout->setContentsMargins( 0, 0, 0, 0 ) ;
 	pLayout->setSpacing( 0 ) ;
-	pLayout->addWidget( pLabel ) ;
 	pLayout->addWidget( m_pTable ) ;
+	pLayout->addWidget( pLabel ) ;
 
+	this->setFixedHeight( 800 ) ;
 	this->setAcceptDrops( true ) ;
 	this->setWindowTitle( QStringLiteral( "数据上传" ) ) ;
 
