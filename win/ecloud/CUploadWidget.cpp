@@ -111,7 +111,15 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 				return ;
 			}
 
-			// 任意一个节点上传成功即成功
+			// 生成文件云端目的地
+			string dist ;
+			for ( auto&& dbnode : global_cloudnodes() )
+			{
+				dist += dbnode.user ;
+				dist += ',' ;
+			}
+
+			// 使用任意一个有效节点完成上传操作
 			for ( auto&& dbnode : global_cloudnodes() )
 			{
 				auto node = dbnode.to_meta() ;
@@ -123,7 +131,7 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 				if ( fm.bytes <= CHUNK_SIZE )
 				{
 					// 上传成功
-					if ( file_to_service( node, fm, filename.c_str(), node.user.c_str() ) == 200 )
+					if ( file_to_service( node, fm, filename.c_str(), dist.c_str() ) == 200 )
 					{
 						emit tableItemStatusChanged( row, 0 ) ;
 						return ;
@@ -138,7 +146,7 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 				for ( auto&& chunk : meta_split_chunk( fm, CHUNK_SIZE ) )
 				{
 					// 每个块使用独立任务上传
-					pmr.map( global_pc(), [ node, chunk, filename ]( auto result )
+					pmr.map( global_pc(), [ node, chunk, filename, dist ]( auto result )
 					{
 						// 块已经存在就不再上传了
 						dbmeta_cloudfile dbchunk ;
@@ -150,7 +158,7 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 						}
 
 						// 上传该块
-						if ( file_to_service( node, chunk, filename.c_str(), node.user.c_str() ) == 200 )
+						if ( file_to_service( node, chunk, filename.c_str(), dist.c_str() ) == 200 )
 						{
 							result->set_value( true ) ;
 							return ;

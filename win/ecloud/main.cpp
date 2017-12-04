@@ -10,7 +10,7 @@
 // 计划: 更新云端信息
 void plan_cloudnodes_update()
 {
-	auto timer = std::make_shared<boost::asio::deadline_timer>( global_pc().get_ios(), boost::posix_time::seconds( 5 ) ) ;
+	auto timer = std::make_shared<boost::asio::deadline_timer>( global_pc().get_ios(), boost::posix_time::seconds( 10 ) ) ;
 
 	auto fina = shared_ptr<void>( nullptr, [ timer ](void*)
 	{
@@ -40,9 +40,9 @@ int main( int argc, char *argv[] )
 	plan_cloudnodes_update() ;
 
 	QApplication app( argc, argv ) ;
-//    CUploadWidget w ;
-    CSettingWidget w;
-//    CBrowserWidget w;
+	CUploadWidget w ;
+    //CSettingWidget w;
+	//CBrowserWidget w;
     w.show() ;
 	app.exec() ;
 	
