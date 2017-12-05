@@ -107,7 +107,7 @@ void global_cloudnodes_update( std::shared_ptr<void> fina )
 				return ;
 			}
 
-			if ( fm.id.empty() || fm.bytes == 0 || fm.end == 0 )
+			if ( fm.id.empty() )
 			{
 				return ;
 			}
