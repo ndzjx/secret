@@ -11,7 +11,7 @@
 // 计划: 更新云端信息
 void plan_cloudnodes_update()
 {
-	auto timer = std::make_shared<boost::asio::deadline_timer>( global_pc().get_ios(), boost::posix_time::seconds( 10 ) ) ;
+	auto timer = std::make_shared<boost::asio::deadline_timer>( global_pc().get_ios(), boost::posix_time::seconds( 3 ) ) ;
 
 	auto fina = shared_ptr<void>( nullptr, [ timer ](void*)
 	{
