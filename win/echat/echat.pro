@@ -1,0 +1,26 @@
+
+QT       += core gui widgets network
+
+greaterThan(QT_MAJOR_VERSION, 4): DEFINES += NOMINMAX
+greaterThan(QT_MAJOR_VERSION, 4): QT += core-private widgets-private
+
+TEMPLATE = app
+
+DESTDIR = ../../run
+
+INCLUDEPATH += ../include
+INCLUDEPATH += ../../src/mod
+QMAKE_LIBDIR += ../lib
+
+CONFIG(debug, debug|release){
+    win32:TARGET=$$join(TARGET,,,d)
+    win32:QMAKE_CXXFLAGS_DEBUG += -Fd$$DESTDIR/$$TARGET$$().pdb
+}
+
+HEADERS += \
+
+SOURCES += \
+    main.cpp
+
+RESOURCES  = \
+    echat.qrc
