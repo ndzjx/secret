@@ -2,5 +2,11 @@
     <qresource prefix="/">
         <file>res/upbk.png</file>
         <file>res/logo.png</file>
+        <file>res/dir_error.png</file>
+        <file>res/dir_normal.png</file>
+        <file>res/dir_ok.png</file>
+        <file>res/sync1.png</file>
+        <file>res/sync2.png</file>
+        <file>res/working.gif</file>
     </qresource>
 </RCC>

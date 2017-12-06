@@ -1,11 +1,15 @@
 
+#include <QSettings>
+#include <QMovie>
+#include <QMenu>
+#include <QDesktopServices>
+#include <QFileIconProvider>
 #include <QDateTime>
 #include <QHostInfo>
 #include <QTemporaryFile>
 #include <QMessageBox>
 #include <QDir>
 #include <QBoxLayout>
-#include <QLabel>
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QHeaderView>
@@ -13,34 +17,208 @@
 
 CUploadWidget::CUploadWidget(QWidget *parent) :
 	QWidget( parent ),
-	m_pTable( NULL )
+	m_pListDirs( nullptr ),
+	m_pTableUpload( nullptr ),
+	m_pBtnSync( nullptr ),
+	m_pLabelMV( nullptr )
 {
-	auto pLabel = new QLabel( this ) ;
-	pLabel->setAcceptDrops( false ) ;
-	pLabel->setPixmap( QPixmap( ":/res/upbk.png" ) ) ;
+	auto pLabel = new QLabel( QStringLiteral( "我的文件夹:" ), this ) ;
+	
+	auto pMovie = new QMovie( ":/res/working.gif", QByteArray(), this ) ;
+	pMovie->start() ;
 
-	m_pTable = new QTableWidget( 0, 3, this ) ;
-	m_pTable->verticalHeader()->setVisible( false ) ;
-	m_pTable->horizontalHeader()->setStretchLastSection( true ) ;
-	m_pTable->setColumnWidth( 0, 600 ) ;
-	m_pTable->setColumnWidth( 1, 80 ) ;
-    m_pTable->setHorizontalHeaderLabels( QStringList()
+	m_pLabelMV = new QLabel( this ) ;
+	m_pLabelMV->setFixedSize( 48, 48 ) ;
+	m_pLabelMV->hide() ;
+	m_pLabelMV->setMovie( pMovie ) ;
+
+	m_pListDirs = new QListWidget( this ) ;
+	m_pListDirs->setViewMode( QListWidget::IconMode ) ;
+	m_pListDirs->setResizeMode( QListWidget::Adjust ) ;
+	m_pListDirs->setMovement( QListWidget::Static ) ;
+	m_pListDirs->setIconSize( QSize( 64, 64 ) ) ;
+	m_pListDirs->setContextMenuPolicy( Qt::CustomContextMenu ) ;
+	connect( m_pListDirs, &QListWidget::itemDoubleClicked, []( auto item )
+	{
+		QDesktopServices::openUrl( QUrl::fromLocalFile( item->data( Qt::UserRole ).toString() ) ) ;
+	} ) ;
+
+	connect( m_pListDirs, &QListWidget::customContextMenuRequested, [ this ]( auto pos )
+	{
+		if ( m_pBtnSync->isEnabled() == false )
+		{
+			return ;
+		}
+
+		auto pItem = m_pListDirs->itemAt( pos ) ;
+		if ( pItem != nullptr )
+		{
+			auto pMenu = new QMenu( this ) ;
+			auto pActDel = new QAction( QStringLiteral( "删除" ), this ) ;
+			pMenu->addAction( pActDel ) ;
+			
+			connect( pActDel, &QAction::triggered, [ pItem, this ]()
+			{
+				m_pListDirs->removeItemWidget( pItem ) ;
+				delete pItem ;
+			} ) ;
+
+			pMenu->exec( QCursor::pos() ) ;
+		}
+	} ) ;
+	
+	m_pTableUpload = new QTableWidget( 0, 3, this ) ;
+	m_pTableUpload->verticalHeader()->setVisible( false ) ;
+	m_pTableUpload->horizontalHeader()->setStretchLastSection( true ) ;
+	m_pTableUpload->setColumnWidth( 0, 300 ) ;
+	m_pTableUpload->setColumnWidth( 1, 80 ) ;
+    m_pTableUpload->setHorizontalHeaderLabels( QStringList()
 		<< QStringLiteral( "文件" )
 		<< QStringLiteral( "大小" )
 		<< QStringLiteral( "状态" ) ) ;
 
-	auto pLayout = new QVBoxLayout( this ) ;
-	pLayout->setContentsMargins( 0, 0, 0, 0 ) ;
-	pLayout->setSpacing( 0 ) ;
-	pLayout->addWidget( m_pTable ) ;
-	pLayout->addWidget( pLabel ) ;
+	m_pBtnSync = new QPushButton( this ) ;
+	m_pBtnSync->setFixedSize( 48, 48 ) ;
+	m_pBtnSync->setStyleSheet(
+		"QPushButton{ border-image: url(:/res/sync1.png); }"
+		"QPushButton:hover{ border-image: url(:/res/sync2.png); }"
+		"QPushButton:pressed{ border-image: url(:/res/sync2.png); }" ) ;
 
-	this->setFixedHeight( 800 ) ;
+	connect( m_pBtnSync, &QPushButton::clicked, [ = ]
+	{
+		if ( m_pListDirs->count() == 0 )
+		{
+			return ;
+		}
+
+		setWorking( true ) ;
+
+		auto fina = plan_make( [ = ]
+		{
+			emit working( false ) ;
+		} ) ;
+
+		vector<QString> dirs ;
+		for ( long i = 0 ; i < m_pListDirs->count() ; ++i )
+		{
+			dirs.emplace_back( m_pListDirs->item( i )->data( Qt::UserRole ).toString() ) ;
+		}
+
+		m_pTableUpload->setRowCount( 0 ) ;
+		this->addTableItems( dirs, fina ) ;
+	} ) ;
+
+	auto pLayout = new QVBoxLayout( this ) ;
+	pLayout->addWidget( pLabel ) ;
+	pLayout->addWidget( m_pListDirs, 1 ) ;
+	pLayout->addWidget( m_pTableUpload, 3 ) ;
+
+	auto pHCenter = new QHBoxLayout( this ) ;
+	pHCenter->addStretch() ;
+	pHCenter->addWidget( m_pBtnSync ) ;
+	pHCenter->addWidget( m_pLabelMV ) ;
+	pHCenter->addStretch() ;
+	pLayout->addLayout( pHCenter ) ;
+
+	this->resize( 480, 640 ) ;
 	this->setAcceptDrops( true ) ;
-	this->setWindowTitle( QStringLiteral( "数据上传" ) ) ;
+	this->setWindowTitle( QStringLiteral( "数据同步" ) ) ;
 
 	connect( this, &CUploadWidget::tableItemStatusChanged,
-		this, &CUploadWidget::setTableItemStatus, Qt::QueuedConnection ) ;
+		this, &CUploadWidget::setTableItemStatus, Qt::BlockingQueuedConnection ) ;
+
+	connect( this, &CUploadWidget::working,
+		this, &CUploadWidget::setWorking, Qt::BlockingQueuedConnection ) ;
+
+	connect( this, &CUploadWidget::appendItem,
+		this, &CUploadWidget::itemAppend, Qt::BlockingQueuedConnection ) ;
+
+	connect( this, &CUploadWidget::dirItemStatusChanged,
+		this, &CUploadWidget::SetDirItemStatusChanged, Qt::BlockingQueuedConnection ) ;
+
+	QSettings setting( "secret", "ecloud" ) ;
+	setting.beginGroup( "mydirs" ) ;
+	for ( auto&& val : setting.allKeys() )
+	{
+		addDir( val ) ;
+	}
+}
+
+CUploadWidget::~CUploadWidget()
+{
+	QSettings setting( "secret", "ecloud" ) ;
+	setting.beginGroup( "mydirs" ) ;
+
+	for ( auto&& val : setting.allKeys() )
+	{
+		setting.remove( val ) ;
+	}
+
+	for ( long i = 0 ; i < m_pListDirs->count() ; ++i )
+	{
+		setting.setValue( m_pListDirs->item( i )->data( Qt::UserRole ).toString(), 0 ) ;
+	}
+}
+
+void CUploadWidget::setWorking( bool work )
+{
+	this->setAcceptDrops( !work ) ;
+	m_pLabelMV->setHidden( !work ) ;
+	m_pBtnSync->setHidden( work ) ;
+}
+
+int CUploadWidget::itemAppend( QString tooltip, QString text, qint64 size )
+{
+	const auto row = m_pTableUpload->rowCount() ;
+	m_pTableUpload->setRowCount( row + 1 ) ;
+
+	{
+		auto item_file_name = new QTableWidgetItem ;
+		item_file_name->setToolTip( tooltip ) ;
+		item_file_name->setText( text ) ;
+		m_pTableUpload->setItem( row, 0, item_file_name ) ;
+	}
+
+	{
+		auto bytes = (double)size ;
+		bytes /= 1024 * 1024 ;
+
+		char out[ 64 ] = { 0 } ;
+		sprintf_s( out, "%.2fM", bytes ) ;
+
+		m_pTableUpload->setItem( row, 1, new QTableWidgetItem( out ) ) ;
+	}
+
+	{
+		m_pTableUpload->setItem( row, 2, new QTableWidgetItem( QStringLiteral( "准备中..." ) ) ) ;
+	}
+
+	return row ;
+}
+
+void CUploadWidget::SetDirItemStatusChanged( QString dir, int status )
+{
+	for ( long i = 0 ; i < m_pListDirs->count() ; ++i )
+	{
+		auto pItem = m_pListDirs->item( i ) ;
+		if ( pItem->data( Qt::UserRole ).toString() == dir )
+		{
+			QPixmap ico( ":/res/dir_normal.png" ) ;
+			switch ( status )
+			{
+			case 0 :
+				ico = QPixmap( ":/res/dir_ok.png" ) ;
+				break ;
+
+			case 1 :
+				ico = QPixmap( ":/res/dir_error.png" ) ;
+				break ;
+			}
+
+			pItem->setIcon( ico ) ;
+			break ;
+		}
+	}
 }
 
 void CUploadWidget::dragEnterEvent( QDragEnterEvent* e )
@@ -62,9 +240,20 @@ void CUploadWidget::dropEvent( QDropEvent* e )
 		items.emplace_back( url.toLocalFile() ) ;
 	}
 
-	if ( !items.empty() )
+	for ( auto&& it : items )
 	{
-		addTableItems( items ) ;
+		QFileInfo fi( it ) ;
+		if ( !fi.isDir() )
+		{
+			continue ;
+		}
+
+		if ( fi.fileName() == "." || fi.fileName() == ".." )
+		{
+			continue ;
+		}
+
+		addDir( fi.absoluteFilePath() ) ;
 	}
 }
 
@@ -98,10 +287,10 @@ void dir_scan( QString path, vector<pair<string,string>>& result )
 	}
 }
 
-void CUploadWidget::addTableItems( const vector<QString>& items )
+void CUploadWidget::addTableItems( const vector<QString>& items, std::shared_ptr<void> fina )
 {
 	// 任务 : 上传单个文件
-	auto task_upload = [ this ]( auto filename, auto row )
+	auto task_upload = [ this, fina ]( auto filename, auto row )
 	{
 		file_meta fm ;
 		if ( meta_from_file( fm, filename.c_str() ) != 0 )
@@ -201,29 +390,7 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 	// UI : 文件上传
 	auto file_upload = [ this, task_upload ]( auto fi )
 	{
-		const auto row = m_pTable->rowCount() ;
-		m_pTable->setRowCount( row + 1 ) ;
-
-		{
-			auto item_file_name = new QTableWidgetItem() ;
-			item_file_name->setToolTip( fi.absoluteFilePath() ) ;
-			item_file_name->setText( fi.fileName() ) ;
-			m_pTable->setItem( row, 0, item_file_name ) ;
-		}
-
-		{
-			auto bytes = (double)fi.size() ;
-			bytes /= 1024 * 1024 ;
-
-			char out[ 64 ] = { 0 } ;
-			sprintf_s( out, "%.2fM", bytes ) ;
-
-			m_pTable->setItem( row, 1, new QTableWidgetItem( out ) ) ;
-		}
-
-		{
-			m_pTable->setItem( row, 2, new QTableWidgetItem( QStringLiteral( "准备中..." ) ) ) ;
-		}
+		auto row = emit appendItem( fi.absoluteFilePath(), fi.fileName(), fi.size() ) ;
 
 		// 将上传任务提交到并行调度器中
 		global_pc().post( std::bind( task_upload, fi.absoluteFilePath().toLocal8Bit().toStdString(), row ) ) ;
@@ -232,6 +399,22 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 	// 任务 : 上传文件夹
 	auto task_dir = [ this, file_upload ]( auto fi )
 	{
+		emit dirItemStatusChanged( fi.absoluteFilePath(), 2 ) ;
+
+		auto this_result = make_shared<bool>( false ) ;
+		auto this_fina = plan_make( [ = ]
+		{
+			if ( *this_result )
+			{
+				emit dirItemStatusChanged( fi.absoluteFilePath(), 0 ) ;
+			}
+
+			else
+			{
+				emit dirItemStatusChanged( fi.absoluteFilePath(), 1 ) ;
+			}
+		} ) ;
+
 		QTemporaryFile tmpfile ;
 		if ( !tmpfile.open() )
 		{
@@ -340,6 +523,7 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 			file_upload( QFileInfo( fi.absoluteFilePath() + QString().fromLocal8Bit( it.second.c_str() ) ) ) ;
 		}
 
+		*this_result = true ;
 		return true ;
 	} ;
 
@@ -348,22 +532,35 @@ void CUploadWidget::addTableItems( const vector<QString>& items )
 		QFileInfo fi( it ) ;
 		if ( fi.isDir() )
 		{
-			if ( !task_dir( fi ) )
-			{
-				QMessageBox::critical(
-					this,
-					QStringLiteral( "错误" ),
-					QStringLiteral( "上传文件夹失败" ),
-					QMessageBox::Yes,
-					QMessageBox::Yes ) ;
-			}
-		}
-
-		else
-		{
-			file_upload( fi ) ;
+			global_pc().post( std::bind( task_dir, fi ) ) ;
 		}
 	}
+}
+
+bool CUploadWidget::addDir( const QString& dir )
+{
+	QFileInfo fi( dir ) ;
+	if ( !fi.isDir() )
+	{
+		return false ;
+	}
+
+	for ( int i = 0 ; i < m_pListDirs->count() ; ++i )
+	{
+		auto pItem = m_pListDirs->item( i ) ;
+		if ( pItem->data( Qt::UserRole ).toString() == fi.absoluteFilePath() )
+		{
+			return false ;
+		}
+	}
+	
+	auto pItem = new QListWidgetItem( m_pListDirs ) ;
+	pItem->setData( Qt::UserRole, fi.absoluteFilePath() ) ;
+	pItem->setToolTip( fi.absoluteFilePath() ) ;
+	pItem->setText( fi.fileName() ) ;
+	pItem->setIcon( QPixmap( ":/res/dir_normal.png" ) ) ;
+	m_pListDirs->addItem( pItem ) ;
+	return true ;
 }
 
 void CUploadWidget::setTableItemStatus( int item, int status )
@@ -372,27 +569,27 @@ void CUploadWidget::setTableItemStatus( int item, int status )
 	switch ( status )
 	{
 		case 0 :
-			m_pTable->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "完成" ) ) ) ;
+			m_pTableUpload->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "完成" ) ) ) ;
 			br = QBrush( QColor( 128, 255, 0 ) ) ;
 			break ;
 
 		case 1 :
-			m_pTable->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "已存在" ) ) ) ;
+			m_pTableUpload->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "已存在" ) ) ) ;
 			br = QBrush( QColor( 128, 255, 0 ) ) ;
 			break ;
 
 		case 2 :
-			m_pTable->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "发送中..." ) ) ) ;
+			m_pTableUpload->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "发送中..." ) ) ) ;
 			br = QBrush( QColor( 230, 230, 0 ) ) ;
 			break ;
 
 		case 3 :
-			m_pTable->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "非法文件" ) ) ) ;
+			m_pTableUpload->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "非法文件" ) ) ) ;
 			br = QBrush( QColor( 255, 90, 90 ) ) ;
 			break ;
 
 		case 4 :
-			m_pTable->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "失败" ) ) ) ;
+			m_pTableUpload->setItem( item, 2, new QTableWidgetItem( QStringLiteral( "失败" ) ) ) ;
 			br = QBrush( QColor( 255, 90, 90 ) ) ;
 			break ;
 
@@ -400,8 +597,8 @@ void CUploadWidget::setTableItemStatus( int item, int status )
 			return ;
 	}
 
-	for ( int i = 0 ; i < m_pTable->columnCount() ; ++i )
+	for ( int i = 0 ; i < m_pTableUpload->columnCount() ; ++i )
 	{
-		m_pTable->item( item, i )->setBackground( br ) ;
+		m_pTableUpload->item( item, i )->setBackground( br ) ;
 	}
 }

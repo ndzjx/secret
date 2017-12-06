@@ -38,27 +38,27 @@ int main( int argc, char *argv[] )
 	app.processEvents() ;
 	
 	pLogo->showMessage( "Initialization Start Engines ...", Qt::AlignRight | Qt::AlignBottom, Qt::yellow ) ;
-	ParallelCore pc_task ;
+	ParallelCore pc_task( 4 ) ;
 	global_pc( &pc_task ) ;
-	boost::this_thread::sleep( boost::posix_time::milliseconds( 500 ) ) ;
+	boost::this_thread::sleep( boost::posix_time::milliseconds( 300 ) ) ;
 	
 	pLogo->showMessage( "Initialization SQLite ...", Qt::AlignRight | Qt::AlignBottom, Qt::yellow ) ;
 	ORMapper db( ( boost::filesystem::system_complete( __argv[ 0 ] ).remove_filename() /= ( "ecloud.db" ) ).generic_string() ) ;
 	global_db( &db ) ;
-	boost::this_thread::sleep( boost::posix_time::milliseconds( 500 ) ) ;
+	boost::this_thread::sleep( boost::posix_time::milliseconds( 300 ) ) ;
 	
 	pLogo->showMessage( "Initialization Tasks ...", Qt::AlignRight | Qt::AlignBottom, Qt::yellow ) ;
 	plan_cloudnodes_update() ;
-	boost::this_thread::sleep( boost::posix_time::milliseconds( 500 ) ) ;
+	boost::this_thread::sleep( boost::posix_time::milliseconds( 300 ) ) ;
 
 	pLogo->showMessage( "Ready Widgets ...", Qt::AlignRight | Qt::AlignBottom, Qt::yellow ) ;
 	CUploadWidget wUpload ;
     CSettingWidget wSetting ;
 	CBrowserWidget wBrowser ;
-	boost::this_thread::sleep( boost::posix_time::milliseconds( 500 ) ) ;
+	boost::this_thread::sleep( boost::posix_time::milliseconds( 300 ) ) ;
 
 	pLogo->showMessage( "Welcome!", Qt::AlignRight | Qt::AlignBottom, Qt::yellow ) ;
-	boost::this_thread::sleep( boost::posix_time::milliseconds( 500 ) ) ;
+	boost::this_thread::sleep( boost::posix_time::milliseconds( 300 ) ) ;
 	delete pLogo ;
 
 	wUpload.show() ;
