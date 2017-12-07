@@ -30,10 +30,11 @@ msg['To'] = ', '.join( var_to.split( ',' ) )
 msg['Subject'] = Header( var_subject, 'utf-8' ).encode()
 
 try:
-	server = smtplib.SMTP( var_smtp, 25 )
-	server.login( var_from, var_password )
-	server.sendmail( var_from, var_to.split( ',' ), msg.as_string() )
-	server.quit()
+    server = smtplib.SMTP( var_smtp )
+    if len( var_password ) > 3:
+        server.login( var_from, var_password )
+    server.sendmail( var_from, var_to.split( ',' ), msg.as_string() )
+    server.quit()
 except Exception as e:
 	sys.exit( 500 )
 
