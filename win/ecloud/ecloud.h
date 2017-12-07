@@ -15,7 +15,9 @@ ORMapper& global_db( ORMapper* db ) ;
 ORMapper& global_db() ;
 
 // 获取云端所有节点
-vector<dbmeta_cloudnode> global_cloudnodes() ;
+vector<dbmeta_cloudnode> global_cloudnodes_all() ;
+vector<dbmeta_cloudnode> global_cloudnodes_sender() ;
+vector<dbmeta_cloudnode> global_cloudnodes_recver() ;
 
 // 更新云端状态
 void global_cloudnodes_update( std::shared_ptr<void> fina ) ;

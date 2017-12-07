@@ -85,7 +85,7 @@ CSettingWidget::CSettingWidget(QWidget *parent) :
 
     // Ìí¼ÓÊı¾İ
     vector<dbmeta_cloudnode> vecEmails;
-    vecEmails = global_cloudnodes();
+    vecEmails = global_cloudnodes_all();
     for (int i = 0; i < vecEmails.size(); ++i)
     {
         service_meta meta = vecEmails[i].to_meta();

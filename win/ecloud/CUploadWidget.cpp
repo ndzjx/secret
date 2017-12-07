@@ -308,16 +308,15 @@ void CUploadWidget::addTableItems( const vector<QString>& items, std::shared_ptr
 		}
 
 		// 生成文件云端目的地
-		auto cloud = global_cloudnodes() ;
 		string dist ;
-		for ( auto&& dbnode : cloud )
+		for ( auto&& dbnode : global_cloudnodes_recver() )
 		{
 			dist += dbnode.user ;
 			dist += ',' ;
 		}
 
 		// 使用任意一个有效节点完成上传操作
-		for ( auto&& dbnode : cloud )
+		for ( auto&& dbnode : global_cloudnodes_sender() )
 		{
 			auto node = dbnode.to_meta() ;
 				
@@ -489,17 +488,16 @@ void CUploadWidget::addTableItems( const vector<QString>& items, std::shared_ptr
 		fm.id += "?" ;
 		fm.id += QDateTime::currentDateTime().toString( "yyyyMMddhhmmss" ).toLocal8Bit().toStdString() ;
 		fm.tag = fi.fileName().toLocal8Bit().toStdString() ;
-
-		bool goon = false ;
-		auto cloud = global_cloudnodes() ;
+		
 		string dist ;
-		for ( auto&& dbnode : cloud )
+		for ( auto&& dbnode : global_cloudnodes_recver() )
 		{
 			dist += dbnode.user ;
 			dist += ',' ;
 		}
 
-		for ( auto&& dbnode : cloud )
+		bool goon = false ;
+		for ( auto&& dbnode : global_cloudnodes_sender() )
 		{
 			if ( file_to_service( dbnode.to_meta(), fm, tmpname.c_str(), dist.c_str() ) == 200 )
 			{

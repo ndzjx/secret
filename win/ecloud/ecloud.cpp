@@ -37,7 +37,7 @@ ORMapper& global_db()
 
 //////////////////////////////////////////////////////////////////////////
 
-vector<dbmeta_cloudnode> global_cloudnodes()
+vector<dbmeta_cloudnode> global_cloudnodes_all()
 {
 	try
 	{
@@ -51,6 +51,34 @@ vector<dbmeta_cloudnode> global_cloudnodes()
 	}
 
 	return vector<dbmeta_cloudnode>() ;
+}
+
+vector<dbmeta_cloudnode> global_cloudnodes_sender()
+{
+	vector<dbmeta_cloudnode> result ;
+	for ( auto&& node : global_cloudnodes_all() )
+	{
+		if ( node.smtp.size() > 3 )
+		{
+			result.emplace_back( node ) ;
+		}
+	}
+
+	return result ;
+}
+
+vector<dbmeta_cloudnode> global_cloudnodes_recver()
+{
+	vector<dbmeta_cloudnode> result ;
+	for ( auto&& node : global_cloudnodes_all() )
+	{
+		if ( node.pop3.size() > 3 )
+		{
+			result.emplace_back( node ) ;
+		}
+	}
+
+	return result ;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -198,7 +226,7 @@ void global_cloudnodes_update( std::shared_ptr<void> fina )
 	{
 		try
 		{
-			for ( auto&& node : global_db().Query( dbmeta_cloudnode{} ).ToVector() )
+			for ( auto&& node : global_cloudnodes_recver() )
 			{
 				auto ptr_service = std::make_shared< decltype( node.to_meta() ) >( node.to_meta() ) ;
 				auto ptr_news = std::make_shared< atomic_int64_t >( 0 ) ;
