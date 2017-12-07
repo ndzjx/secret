@@ -6,7 +6,12 @@ secret - Data over E-Mail
 
 Thank you:
 [Boost](http://www.boost.org/) |
-[iguana](https://github.com/qicosmos/iguana/) |
+[Python](https://www.python.org/) |
 [Qt](https://www.qt.io/) |
+[sqlite](https://www.sqlite.org/) |
+[iguana](https://github.com/qicosmos/iguana/) |
 [ormpp](https://github.com/qicosmos/ormpp/) |
-[ORM Lite](https://github.com/BOT-Man-JL/ORM-Lite)
+[ORM Lite](https://github.com/BOT-Man-JL/ORM-Lite) |
+[openssl](https://www.openssl.org/) |
+[cpprestsdk](https://github.com/Microsoft/cpprestsdk) |
+[LZMA](http://www.7-zip.org/sdk.html) |
