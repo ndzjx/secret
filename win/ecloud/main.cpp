@@ -38,7 +38,7 @@ int main( int argc, char *argv[] )
 	app.processEvents() ;
 	
 	pLogo->showMessage( "Initialization Start Engines ...", Qt::AlignRight | Qt::AlignBottom, Qt::yellow ) ;
-	ParallelCore pc_task( 4 ) ;
+	ParallelCore pc_task ;
 	global_pc( &pc_task ) ;
 	boost::this_thread::sleep( boost::posix_time::milliseconds( 300 ) ) ;
 	
