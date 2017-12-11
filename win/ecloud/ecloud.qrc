@@ -8,5 +8,21 @@
         <file>res/sync1.png</file>
         <file>res/sync2.png</file>
         <file>res/working.gif</file>
+        <file>res/upward.png</file>
+        <file>res/localf.png</file>
+        <file>res/refresh.png</file>
+        <file>res/tabupload.png</file>
+        <file>res/tabbrower.png</file>
+        <file>res/tabsetting.png</file>
+        <file>res/node_sender.png</file>
+        <file>res/node_receiver.png</file>
+        <file>res/node_rw.png</file>
+        <file>res/main.png</file>
+        <file>res/ico-min.png</file>
+        <file>res/ico-max.png</file>
+        <file>res/ico-close.png</file>
+        <file>res/add.png</file>
+        <file>res/minus.png</file>
+        <file>res/save.png</file>
     </qresource>
 </RCC>

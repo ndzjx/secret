@@ -18,9 +18,47 @@ CONFIG(debug, debug|release){
 }
 
 HEADERS += \
+	echat.h \
+    MainForm.h \
+    AudioForm.h \
+    Widget.h \
+    TextEdit.h \
+    GHYTitleBar.h \
+    MessageConsts.h \
+    MessageScrollWidget.h \
+    MessageWidget.h \
+    eChatWidget.h \
+    CSettingWidget.h \
+    CAddEmailDialog.h \
+    CHackConsts.h \
+    myemotionitemwidget.h \
+    myemotionwidget.h \
+    myemotionwindow.h \
+    Emotion.h
 
 SOURCES += \
-    main.cpp
+    main.cpp \
+    echat.cpp \
+    MainForm.cpp \
+    AudioForm.cpp \
+    Widget.cpp \
+    TextEdit.cpp \
+    GHYTitleBar.cpp \
+    MessageConsts.cpp \
+    MessageScrollWidget.cpp \
+    MessageWidget.cpp \
+    eChatWidget.cpp \
+    CSettingWidget.cpp \
+    CAddEmailDialog.cpp \
+    CHackConsts.cpp \
+    myemotionitemwidget.cpp \
+    myemotionwidget.cpp \
+    myemotionwindow.cpp \
+    Emotion.cpp
 
 RESOURCES  = \
-    echat.qrc
+    echat.qrc \
+    myemotionwindow.qrc
+
+FORMS += \
+    myemotionwindow.ui

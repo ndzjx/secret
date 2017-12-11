@@ -83,7 +83,7 @@ vector<dbmeta_cloudnode> global_cloudnodes_recver()
 
 //////////////////////////////////////////////////////////////////////////
 
-void global_cloudnodes_update( std::shared_ptr<void> fina )
+void global_cloudnodes_update( std::shared_ptr<uint64_t> fina )
 {
 	auto task_finally = [ fina ]( auto ptr_service, auto ptr_news )
 	{
@@ -94,6 +94,7 @@ void global_cloudnodes_update( std::shared_ptr<void> fina )
 
 			if ( news )
 			{
+				*fina += news ;
 				dbmeta_cloudnode node ;
 				service.mails += news ;
 				node.from_meta( service ) ;
@@ -222,7 +223,7 @@ void global_cloudnodes_update( std::shared_ptr<void> fina )
 		}
 	} ;
 
-	auto task_main = [ task_check_number ]
+	auto task_main = [ task_check_number, task_insert_index ]
 	{
 		try
 		{
@@ -230,7 +231,8 @@ void global_cloudnodes_update( std::shared_ptr<void> fina )
 			{
 				auto ptr_service = std::make_shared< decltype( node.to_meta() ) >( node.to_meta() ) ;
 				auto ptr_news = std::make_shared< atomic_int64_t >( 0 ) ;
-				global_pc().post( std::bind( task_check_number, ptr_service, ptr_news ) ) ;
+				//global_pc().post( std::bind( task_check_number, ptr_service, ptr_news ) ) ;
+				global_pc().post( std::bind( task_insert_index, task_insert_index, ptr_service, ptr_news ) ) ;
 			}
 		}
 
@@ -267,6 +269,10 @@ bool global_cloudnode_del( const dbmeta_cloudnode& dbnode )
 	try
 	{
 		global_db().Delete( dbnode ) ;
+
+		dbmeta_cloudfile model ;
+		auto field = FieldExtractor{ model } ;
+		global_db().Delete( dbmeta_cloudfile{}, field( model.service ) == dbnode.user ) ;
 	}
 
 	catch ( ... )
@@ -328,8 +334,6 @@ vector<dbmeta_cloudfile> global_cloudfiles()
 	try
 	{
 		dbmeta_cloudfile model ;
-		auto field = FieldExtractor{ model } ;
-		
 		for ( auto&& cf : global_db().Query( model ).ToVector() )
 		{
 			if ( global_cloudfile_exist( cf.id ) )
@@ -345,6 +349,108 @@ vector<dbmeta_cloudfile> global_cloudfiles()
 	}
 
 	return ret ;
+}
+
+map< pair<string, string>, string > global_clouddirs()
+{
+	map< pair<string, string>, string > dict_dir_tree ;
+
+	try
+	{
+		dbmeta_cloudfile model ;
+		auto field = FieldExtractor{ model } ;
+
+		map< pair<string, string>, int > dict_user_path ;
+		map< pair<string, string>, vector<dbmeta_cloudfile> > dict_dir_nodes ;
+		
+		for ( auto&& dir : global_db()
+			.Query( model )
+			.Where( field ( model.id ) & std::string( ".dir%" ) )
+			.ToVector() )
+		{
+			vector<string> meta ;
+			boost::algorithm::split( meta, dir.id, boost::is_any_of( "?" ) ) ;
+			if ( meta.size() != 4 )
+			{
+				continue ;
+			}
+
+			dict_user_path[ make_pair( meta[ 1 ], meta[ 2 ] ) ] ;
+		}
+
+		for ( auto&& key : dict_user_path )
+		{
+			string like = ".dir?" ;
+			like += key.first.first ;
+			like += "?" ;
+			like += key.first.second ;
+			like += "?%" ;
+			
+			auto dirs = global_db()
+				.Query( model )
+				.Where( field ( model.id ) & like )
+				.OrderByDescending( field ( model.id ) )
+				.Take( 1 )
+				.ToVector() ;
+			if ( dirs.empty() )
+			{
+				continue ;
+			}
+			
+			dict_dir_nodes[ key.first ] = global_db()
+				.Query( model )
+				.Where( field ( model.id ) & dirs[ 0 ].id )
+				.ToVector() ;
+		}
+
+		ParallelMapReduce< pair< string, pair< string, string > > > pmr ;
+		for ( auto&& key : dict_dir_nodes )
+		{
+			pmr.map( global_pc(), [ key ]( auto result )
+			{
+				for ( auto&& dir : key.second )
+				{
+					dbmeta_cloudnode node ;
+					if ( !global_cloudnode_get( dir.service, node ) )
+					{
+						continue ;
+					}
+
+					string tree = email_content(
+						node.pop3.c_str(),
+						node.user.c_str(),
+						node.pawd.c_str(),
+						stoull( dir.number ) ) ;
+					if ( tree.empty() )
+					{
+						continue ;
+					}
+
+					result->set_value( make_pair( tree, key.first ) ) ;
+					return ;
+				}
+
+				result->set_value( make_pair( string(), make_pair( string(), string() ) ) ) ;
+			} ) ;
+		}
+
+		pmr.reduce( [ &dict_dir_tree ]( auto&& result )
+		{
+			if ( result.first.empty() )
+			{
+				return ;
+			}
+
+			dict_dir_tree[ result.second ] = result.first ;
+		} ) ;
+	}
+
+	catch ( ... )
+	{
+
+	}
+
+	return dict_dir_tree ;
 }
 
 //////////////////////////////////////////////////////////////////////////

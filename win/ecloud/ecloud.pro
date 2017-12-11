@@ -1,5 +1,5 @@
 
-QT       += core gui widgets network
+QT       += core gui widgets network winextras
 
 greaterThan(QT_MAJOR_VERSION, 4): DEFINES += NOMINMAX
 greaterThan(QT_MAJOR_VERSION, 4): QT += core-private widgets-private
@@ -19,18 +19,26 @@ CONFIG(debug, debug|release){
 
 HEADERS += \
     ecloud.h \
+    MainForm.h \
     CUploadWidget.h \
     CBrowserWidget.h \
     CSettingWidget.h \
-    CAddEmailDialog.h
+    CAddEmailDialog.h \
+    CHackConsts.h \
+    CTreeAnalysis.h \
+    GHYTitleBar.h \
 
 SOURCES += \
     main.cpp \
     ecloud.cpp \
+    MainForm.cpp \
     CUploadWidget.cpp \
     CBrowserWidget.cpp \
     CSettingWidget.cpp \
-    CAddEmailDialog.cpp
+    CAddEmailDialog.cpp \
+    CHackConsts.cpp \
+    CTreeAnalysis.cpp \
+    GHYTitleBar.cpp \
 
 RESOURCES  = \
     ecloud.qrc

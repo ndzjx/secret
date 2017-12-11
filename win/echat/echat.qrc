@@ -1,5 +1,21 @@
 <RCC>
     <qresource prefix="/">
         <file>res/logo.png</file>
+        <file>res/audio_start.png</file>
+        <file>res/audio_stop.png</file>
+        <file>res/file-open.png</file>
+        <file>res/audiomode.png</file>
+        <file>res/sendimage.png</file>
+        <file>res/ico-close.png</file>
+        <file>res/ico-max.png</file>
+        <file>res/ico-min.png</file>
+        <file>res/main.png</file>
+        <file>res/add.png</file>
+        <file>res/minus.png</file>
+        <file>res/tabbrower.png</file>
+        <file>res/tabsetting.png</file>
+        <file>res/btn-voice.png</file>
+        <file>res/em.png</file>
+        <file>res/btn-voiceclick.png</file>
     </qresource>
 </RCC>

@@ -15,12 +15,13 @@ CAddEmailDialog::CAddEmailDialog(QDialog *parent) :
 {
     m_pLedtAcnt = new QLineEdit(this);
     m_pLedtPwd = new QLineEdit(this);
+    m_pLedtPwd->setEchoMode(QLineEdit::Password);
     m_pLedtSmtp = new QLineEdit(this);
     m_pLedtPop3 = new QLineEdit(this);
 
     QGridLayout *pGrilInfo = new QGridLayout(this);
     pGrilInfo->setColumnStretch(1, 1);
-    pGrilInfo->addWidget(new QLabel(QStringLiteral("用户名:")), 0, 0);
+    pGrilInfo->addWidget(new QLabel(QStringLiteral("账号:")), 0, 0);
     pGrilInfo->addWidget(m_pLedtAcnt, 0, 1);
     pGrilInfo->addWidget(new QLabel(QStringLiteral("密码:")), 1, 0);
     pGrilInfo->addWidget(m_pLedtPwd, 1, 1);
@@ -30,6 +31,15 @@ CAddEmailDialog::CAddEmailDialog(QDialog *parent) :
     pGrilInfo->addWidget(m_pLedtPop3, 3, 1);
     QWidget *pWidgetTop = new QWidget(this);
     pWidgetTop->setLayout(pGrilInfo);
+
+    QLabel *pLblTip = new QLabel(QString("<span style=\" color:red;\">%1</span>").
+                                 arg(QStringLiteral("服务器不能同时为空")), this);
+    pLblTip->setFont(QFont());
+    QHBoxLayout *pHblMidTip = new QHBoxLayout(this);
+    pHblMidTip->addStretch();
+    pHblMidTip->addWidget(pLblTip);
+    QWidget *pWidgetMidTip = new QWidget(this);
+    pWidgetMidTip->setLayout(pHblMidTip);
 
     QPushButton *pBtnOk = new QPushButton(QStringLiteral("确定"), this);
     QPushButton *pBtnCancel = new QPushButton(QStringLiteral("取消"), this);
@@ -42,19 +52,32 @@ CAddEmailDialog::CAddEmailDialog(QDialog *parent) :
 
     QVBoxLayout *pVblCenter = new QVBoxLayout(this);
     pVblCenter->addWidget(pWidgetTop);
+    pVblCenter->addWidget(pWidgetMidTip);
     pVblCenter->addWidget(pWidgetBottom);
 
     setLayout(pVblCenter);
     setFocusPolicy(Qt::NoFocus);
 
     connect(pBtnOk, &QPushButton::clicked, [this]{
-        if (m_pLedtAcnt->text().isEmpty() ||
-            m_pLedtPwd->text().isEmpty() ||
-            m_pLedtSmtp->text().isEmpty() ||
-            m_pLedtPop3->text().isEmpty())
+        if (m_pLedtAcnt->text().trimmed().isEmpty())
         {
-            QMessageBox::warning(this, QStringLiteral("错误"), QStringLiteral("内容不能为空！"),
+            QMessageBox::warning(this, QStringLiteral("错误"), QStringLiteral("用户名不能为空！"),
                                  QStringLiteral("确定"));
+            m_pLedtAcnt->setFocus();
+            return;
+        }
+        else if (m_pLedtPwd->text().trimmed().isEmpty())
+        {
+            QMessageBox::warning(this, QStringLiteral("错误"), QStringLiteral("密码不能为空！"),
+                                 QStringLiteral("确定"));
+            m_pLedtPwd->setFocus();
+            return;
+        }
+        else if (m_pLedtSmtp->text().trimmed().isEmpty() && m_pLedtPop3->text().trimmed().isEmpty())
+        {
+            QMessageBox::warning(this, QStringLiteral("错误"), QStringLiteral("服务器不能同时为空！"),
+                                 QStringLiteral("确定"));
+            m_pLedtSmtp->setFocus();
             return;
         }
         accept();
@@ -63,4 +86,5 @@ CAddEmailDialog::CAddEmailDialog(QDialog *parent) :
         reject();
     });
 
+	setWindowTitle( QStringLiteral( "添加节点" ) ) ;
 }

@@ -200,6 +200,74 @@ inline auto email_subject(
 	return ret ;
 }
 
+inline auto email_content(
+	const char* pop3,
+	const char* user,
+	const char* password,
+	int64_t uidl )
+{
+	using namespace boost::filesystem ;
+
+	string ret ;
+
+	string raw = ( system_complete( __argv[ 0 ] ).remove_filename() /= ( "email_content.exe" ) ).generic_string() ;
+	
+	raw += R"( ")" ;
+	raw += pop3 ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
+	raw += user ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
+	raw += password ;
+	raw += R"(")" ;
+
+	raw += R"( ")" ;
+	raw += to_string( uidl ) ;
+	raw += R"(")" ;
+	
+	SECURITY_ATTRIBUTES sa = { 0 } ;
+	sa.nLength = sizeof( sa ) ;
+	sa.bInheritHandle = TRUE ;
+	sa.lpSecurityDescriptor = NULL ;
+
+	HANDLE hReadPipe = NULL ;
+	HANDLE hWritePipe = NULL ;
+	if ( CreatePipe( &hReadPipe, &hWritePipe, &sa, 1024 * 1024 ) != TRUE )
+	{
+		return ret ;
+	}
+	
+	if ( exec_proxy( raw.c_str(), hWritePipe ) != 200 )
+	{
+		CloseHandle( hReadPipe ) ;
+		CloseHandle( hWritePipe ) ;
+		return ret ;
+	}
+
+	try
+	{
+		CloseHandle( hWritePipe ) ;
+		auto file = file_handle( hReadPipe ) ;
+		if ( file )
+		{
+			const auto len = file_size( file.get() ) ;
+			ret.resize( len + 1 ) ;
+			fread( &ret.at( 0 ), 1, len, file.get() ) ;
+			ret.resize( len ) ;
+		}
+	}
+
+	catch ( ... )
+	{
+
+	}
+
+	return ret ;
+}
+
 inline auto email_recv(
 	const char* pop3,
 	const char* user,

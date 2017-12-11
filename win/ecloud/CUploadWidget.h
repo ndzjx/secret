@@ -14,7 +14,6 @@ class CUploadWidget : public QWidget
     Q_OBJECT
 public:
     explicit CUploadWidget(QWidget *parent = 0);
-	~CUploadWidget();
 
 signals:
 	void tableItemStatusChanged( int item, int status ) ;
@@ -37,6 +36,8 @@ private:
 	bool addDir( const QString& dir ) ;
 
 private:
+	void saveConfig() ;
+
 	QListWidget*	m_pListDirs		;
 	QTableWidget*	m_pTableUpload	;
 	QPushButton*	m_pBtnSync		;

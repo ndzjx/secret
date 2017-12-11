@@ -61,6 +61,7 @@ CUploadWidget::CUploadWidget(QWidget *parent) :
 			{
 				m_pListDirs->removeItemWidget( pItem ) ;
 				delete pItem ;
+				saveConfig() ;
 			} ) ;
 
 			pMenu->exec( QCursor::pos() ) ;
@@ -70,8 +71,9 @@ CUploadWidget::CUploadWidget(QWidget *parent) :
 	m_pTableUpload = new QTableWidget( 0, 3, this ) ;
 	m_pTableUpload->verticalHeader()->setVisible( false ) ;
 	m_pTableUpload->horizontalHeader()->setStretchLastSection( true ) ;
-	m_pTableUpload->setColumnWidth( 0, 300 ) ;
+	m_pTableUpload->setColumnWidth( 0, 260 ) ;
 	m_pTableUpload->setColumnWidth( 1, 80 ) ;
+	m_pTableUpload->setColumnWidth( 2, 80 ) ;
     m_pTableUpload->setHorizontalHeaderLabels( QStringList()
 		<< QStringLiteral( "文件" )
 		<< QStringLiteral( "大小" )
@@ -79,6 +81,7 @@ CUploadWidget::CUploadWidget(QWidget *parent) :
 
 	m_pBtnSync = new QPushButton( this ) ;
 	m_pBtnSync->setFixedSize( 48, 48 ) ;
+	m_pBtnSync->setToolTip( QStringLiteral( "开始同步" ) ) ;
 	m_pBtnSync->setStyleSheet(
 		"QPushButton{ border-image: url(:/res/sync1.png); }"
 		"QPushButton:hover{ border-image: url(:/res/sync2.png); }"
@@ -136,27 +139,11 @@ CUploadWidget::CUploadWidget(QWidget *parent) :
 	connect( this, &CUploadWidget::dirItemStatusChanged,
 		this, &CUploadWidget::SetDirItemStatusChanged, Qt::BlockingQueuedConnection ) ;
 
-	QSettings setting( "secret", "ecloud" ) ;
+	QSettings setting( QCoreApplication::applicationDirPath() + "/ecloud.ini", QSettings::IniFormat ) ;
 	setting.beginGroup( "mydirs" ) ;
 	for ( auto&& val : setting.allKeys() )
 	{
 		addDir( val ) ;
-	}
-}
-
-CUploadWidget::~CUploadWidget()
-{
-	QSettings setting( "secret", "ecloud" ) ;
-	setting.beginGroup( "mydirs" ) ;
-
-	for ( auto&& val : setting.allKeys() )
-	{
-		setting.remove( val ) ;
-	}
-
-	for ( long i = 0 ; i < m_pListDirs->count() ; ++i )
-	{
-		setting.setValue( m_pListDirs->item( i )->data( Qt::UserRole ).toString(), 0 ) ;
 	}
 }
 
@@ -255,6 +242,8 @@ void CUploadWidget::dropEvent( QDropEvent* e )
 
 		addDir( fi.absoluteFilePath() ) ;
 	}
+
+	saveConfig() ;
 }
 
 void dir_scan( QString path, vector<pair<string,string>>& result )
@@ -559,6 +548,22 @@ bool CUploadWidget::addDir( const QString& dir )
 	pItem->setIcon( QPixmap( ":/res/dir_normal.png" ) ) ;
 	m_pListDirs->addItem( pItem ) ;
 	return true ;
+}
+
+void CUploadWidget::saveConfig()
+{
+	QSettings setting( QCoreApplication::applicationDirPath() + "/ecloud.ini", QSettings::IniFormat ) ;
+	setting.beginGroup( "mydirs" ) ;
+
+	for ( auto&& val : setting.allKeys() )
+	{
+		setting.remove( val ) ;
+	}
+
+	for ( long i = 0 ; i < m_pListDirs->count() ; ++i )
+	{
+		setting.setValue( m_pListDirs->item( i )->data( Qt::UserRole ).toString(), 0 ) ;
+	}
 }
 
 void CUploadWidget::setTableItemStatus( int item, int status )

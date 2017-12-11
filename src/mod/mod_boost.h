@@ -13,5 +13,6 @@
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/spawn.hpp>
+#include <boost/signals2.hpp>
 
 #endif
